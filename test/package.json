@@ -1,0 +1,15 @@
+{
+    "lode": true,
+    "main": "main.js",
+    "includes": [
+        "includes/bar",
+        "includes/baz"
+    ],
+    "mappings": {
+        "foo": "mappings/foo"
+    },
+    "requires": {
+        "node": "node@0.3",
+        "q-fs": ""
+    }
+}

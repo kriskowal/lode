@@ -1,0 +1,30 @@
+{
+    "name": "lode",
+    "description": "",
+    "version": "0.0.0",
+    "homepage": "http://github.com/kriskowal/lode/",
+    "author": "Kris Kowal <kris@cixar.com> (http://github.com/kriskowal/)",
+    "contributors": [
+        "Kris Kowal <kris@cixar.com> (http://github.com/kriskowal/)"
+    ],
+    "bugs": {
+        "mail": "kris@cixar.com",
+        "web": "http://github.com/kriskowal/lode/issues"
+    },
+    "licenses": [
+        {
+            "type": "MIT",
+            "url": "http://github.com/kriskowal/lode/raw/master/LICENSE"
+        }
+    ],
+    "bin": {
+        "lode": "./lode.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "http://github.com/kriskowal/lode.git"
+    },
+    "engines": {
+        "node": ">=0.2.0"
+    }
+}

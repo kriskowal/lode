@@ -1,0 +1,6 @@
+{
+    "lode": true,
+    "includes": [
+        "../bar"
+    ]
+}
