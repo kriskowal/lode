@@ -80,6 +80,21 @@ for discovering static dependencies is static analysis,
 scraping the source code of a module for `require` calls.
 This is fraught with difficulty.
 
+Instead, Lode imposes strong constraints on what modules are
+available within a package by enforcing the linkage
+described in `package.json` and affording many good options
+for both internal and external linkage.  In the presence of
+these constraints, the working set of any module in a
+package is a strict subset of the working set of the
+containing package.  In the Node ecosystem, packages are
+very light, usually providing a single module for its public
+API.  By configuring the loader to incorporate module roots
+based on the target environment, it is possible for Lode to
+construct lighter packages.  Given that packages are light,
+it makes sense to take the small risk of bundling packages
+with modules that may never be executed, and designing
+packages around these constraints for use in browsers.
+
 
 Lode Packages
 -------------
