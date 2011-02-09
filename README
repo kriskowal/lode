@@ -15,6 +15,10 @@ install `lode`.  That will give you a `lode` executable.
 
     $ npm install lode
 
+Then read the test package to get an idea what to expect and:
+
+    $ lode test
+
 `lode` is an alternate executable that runs CommonJS modules
 in packages.  The packages of modules are asynchronously
 loaded and statically linked.  `lode` discovers the package

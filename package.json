@@ -24,6 +24,10 @@
         "type": "git",
         "url": "http://github.com/kriskowal/lode.git"
     },
+    "dependencies": {
+        "q": "0.2.7",
+        "q-fs": "0.0.5"
+    },
     "engines": {
         "node": ">=0.2.0"
     }
