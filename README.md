@@ -7,6 +7,16 @@ packages, and broadly, to CommonJS JavaScript packages, and
 more broadly, to packaging and deploying programs in
 general.
 
+Lode is an experiment to provide asynchronously loading
+modules both for servers and clients by making packages the
+smallest unit of functionality deliverable to a browser and
+using the `package.json` of each package to statically link
+modules between packages.  Furthermore, Lode is intended to
+provide better options for decoupling shared installation of
+packages from deployment, particularly for separate
+deployment and management of CommonJS packages for use on
+the server from those for use on the client.
+
 To use `lode`, install `node` and `npm`. The use `npm` to
 install `lode`.  That will give you a `lode` executable.
 
@@ -68,14 +78,6 @@ simple wrapping of CommonJS modules, the current best option
 for discovering static dependencies is static analysis,
 scraping the source code of a module for `require` calls.
 This is fraught with difficulty.
-
-Lode is an experiment to provide asynchronously loading
-modules both for servers and clients by making packages the
-smallest unit of functionality deliverable to a browser and
-using the `package.json` of each package to statically link
-modules between packages.  Furthermore, Lode is intended to
-provide better options for decoupling shared installation of
-packages from deployment.
 
 
 Lode Packages
@@ -262,6 +264,201 @@ If true, the given package will incorporate `debug` roots
 from any other root.
 
 
+Glossary
+--------
+
+- autonomous: a property of some module systems where a
+  module, package, or name-space provides its own name and
+  thus is tightly coupled to that name both internally and
+  to other modules, packages, or name-spaces.  CommonJS
+  modules are not autonomous.  RequireJS permits modules to
+  be optionally autonomous, by way of the `define` call, so
+  that they can be bundled.  The Simple Modules strawman for
+  ECMAScript Harmony allows modules to be autonomous within
+  a file, but the top scope of a loaded module must be named
+  in the loading module, so both concepts are supported.
+- bundle: a JavaScript file that can be downloaded and
+  executed by a web browser using script-injection to
+  asynchronously load one or more modules or packages of
+  modules.  Lode does not presently provide a bundling
+  feature, but it is in the design.
+- catalog: a file on the web that describes a set of
+  packages.
+- compile: to transform a module in a source language, like
+  CoffeeScript, and produce JavaScript.
+- context: a JavaScript execution context is a container in
+  which a JavaScript event-loop can be executed,
+  guaranteeing that the array and object literal
+  constructors produce instances with the same particular
+  constructors, and providing the same primordial references
+  and global scope to all events.
+- cross-domain: in a web browser, a URL that has a different
+  domain than the containing page.  Web browsers impose
+  restrictions on JavaScript's ability to interact with
+  cross-domain resources (as in limiting the ability to use
+  an XMLHttpRequest), and for an iframe's ability to
+  interact with the containing frame's JavaScript
+  references.
+- define: a function name used by RequireJS and some
+  CommonJS proposals to permit a hand-written module to be
+  loaded with script-injection.
+- dependencies: particuarly package dependencies, including
+  mappings, includes, and eventually alternate module loader
+  packages.  In a package configuration, dependencies are
+  uniformly represented by the right-hand side of a
+  `mappings` item, and the contents of an `includes` array.
+- engine: A JavaScript embedding like NodeJS (`"node"`),
+  Rhino (`"rhino"`), an arbitrary web browser (`"browser"`),
+  or a particular web browser.  Engines provide different
+  classes of functionality so packages can be provide
+  alternate modules for different engines.
+- entry-point: the first module executed in an instance of a
+  working-set of packages and modules.  The entry-point is
+  determined by the `id` in `pkg.require.exec(id)`.
+- exports: the public API of a module, represented as a
+  free-variable in a module, or returned by a module.
+- extension: the part of a file-name after the last dot,
+  `"."`, that is presently the only mechanism for
+  communicating to a loader whether and how a module file
+  should be loaded or compiled.
+- factory: a function that executes a module.  Module
+  factories are called by a module loader on the first
+  occasion a module is required.  Having a factory permits a
+  module to be executed or instantiated independently of
+  loading.
+- free variable: a variable that is not bound in a lexical
+  scope and presumed to be inherited from a parent scope,
+  like the primordials, and other variables injected into
+  modules like `require` and `exports`.
+- identifier: a string that corresponds to a module in the
+  module-name space of a package.  Identifiers are
+  lower-case names using hyphens to delimit words, organized
+  into subtrees with slash, `"/"`, delimiters.  Identifiers
+  are either top-level or relative depending on whether or
+  not they begin with one of `"./"` or `"../".
+- include: a type of dependency that gets "mixed-in" with
+  the module name space of the containing package.
+- library: a directory called `"lib"` by convention in any
+  of a package's roots containing modules and directories of
+  modules that get inducted into the top-level module
+  name-space of a package.
+- link: a module identifier in one package that corresponds
+  to a module identifier in a dependency package.
+- load: as distinct from execution, loading asynchronously
+  provides a module factory to a loader, sometimes for a
+  single module, sometimes as part of a bundle of modules or
+  packages.  Only when all of the modules and packages in a
+  working-set have been loaded can any module in that
+  working set be executed because a `require` call in any
+  module must be able to return the exports of the requested
+  module in the same turn of the event-loop.
+- loader options: an object that configures a module loader
+  to use particular roots in each of the loaded packages,
+  for example, for debug mode in a browser, or for
+  deployment in Node.  Different options result in different
+  modules being used if a package provides alternate
+  versions of modules.
+- loader: a device that asynchronously loads packages and
+  modules, permitting them to eventually be synchronously
+  executed.
+- main (package configuration): in the context of a
+  particular package, the main module is identified by `""`.
+  Whether a package has a main module and what file
+  corresponds to the main module identifier is the `"main"`
+  property of the package's configuration.
+- main (require): In the context of executing a package, the
+  `"main"` module is the entry-point for the execution of a
+  working-set of packages and modules.  In the scope of any
+  module, `require.main` is the `module` object in the scope
+  of the main module.
+- mapping: a kind of dependency where the top-level module
+  name-space of an external package gets integrated into a
+  sub-tree of the dependent package's name-space.
+- module: a file that has its own, sovereign lexical scope
+  and may require and provide exports from and to other
+  modules using the `require` and `exports` free variables,
+  and the `return` statement.  A module receives a `module`
+  free variable with meta-data like the module's identifier.
+- name-space: the module identifier name-space is a set of
+  top-level identifiers scoped to a package, where some
+  identifiers are linked to modules within the package, and
+  others to dependency packages.
+- package configuration: the `package.json` of a package,
+  containing its configuration information, particularly how
+  it should be linked to other packages and described to
+  package registries and catalogs.
+- package: a directory or archive of a directory with a
+  package configuration file at its root (`package.json`),
+  various roots, libraries within roots, and modules within
+  libraries.
+- primordial: any of the objects intrinsic to a context like
+  the global object and `Object` and `Array` constructors.
+- public: the set of top-level module identifiers from one
+  package that are linked to a dependent package either
+  through mappings or includes.  Presently, all modules in a
+  package, including their includes and mappings, are
+  publically linked, but eventually it will be possible to
+  restrict the list of publically linked identifiers in the
+  package configuration.
+- registry: a web service for searching, downloading, and
+  posting packages.
+- relative: a class of module identifier that begins with
+  `"./"` or `"../"` indicating that the corresponding module
+  should be resolved relative to the current module's
+  top-level identifier.
+- require: a function provided as a free-variable to
+  CommonJS modules that permits the module to acquire the
+  exports of another module.
+- root: a directory in a package including the top-most
+  directory of a package, and including other
+  sub-directories of the package depending on the loader
+  options, for example, including the
+  `{root}/engines/{engine}` directory of any other root and
+  configured engine name like `node` or `browser`, and the
+  `{root}/debug` directory of any other root if a loader is
+  configured for debugging.  Roots are prioritized from most
+  to least specific and searched for resources, particularly
+  but not limited to library directories where modules are
+  found.
+- script-injection: a technique for asynchronously
+  downloading and executing potentially cross-domain
+  JavaScript in a web browser.
+- SES5: secure ECMAScript 5 is a subset of ECMAScript 5 (a
+  specification for the class of languages including
+  JavaScript) where all of the primordials are immutable (by
+  virtue of being frozen) and other invariants are
+  maintained to prevent the lexical scope and primordials in
+  any event from being suberted by another event, and to
+  permit mutually suspicious programs to run in the same
+  event loop without interference except possibly
+  denial-of-service.
+- sovereign: pertaining to a lexical-scope, means that a
+  module is not coupled to other modules using a shared
+  lexical scope, and thus is safe from contamination and
+  pollution of other modules.  CommonJS modules have
+  sovereignty over their lexical scope.  Pertaining to the
+  module identifier-name space, means that a package is not
+  implicitly coupled to other packages, using a shared
+  package name-space, and thus is safe from contamination
+  and polution of other packages.  Lode packages have
+  sovereignty over their module name-space, but may elect to
+  be coupled to specific packages through includes and
+  mappings.  Node packages do not have sovereignty; they are
+  subject to the module identifier name-spaces provided to
+  them by Node and other packages.  NPM makes an effort to
+  guarantee consistent linkage to dependencies, but does not
+  provide sovereignty.  Narwhal packages do not have
+  sovereignty; they are subject to the module identifier
+  name spaces of all installed packages.
+- top-level: as distinguished from "relative", a top-level
+  module identifier is one that does not start with a `"./"`
+  or a `"../"`, indicating that a module is linked relative
+  to the root of the module name-space, `""`.
+- turn: the execution of an event in JavaScript. The
+  JavaScript event-loop arranges for events to be execute
+  din turns, with only one stack of execution at any time.
+
+
 Future
 ------
 
@@ -300,28 +497,41 @@ intends.
 It will be possible to use `lode` to build a stand-alone
 executable for a package.
 
-It will be possible to provide hooks for running modules in
-other languages, or compiling them to JavaScript so that
-they can be used in browsers.
+It will be possible to specify in `package.json` that
+particular file extensions in that package should be loaded
+or compiled to JavaScript with an alternate loader, provided
+by a given package.  If the modules in question are being
+delivered to a browser, it will be necessary for the loader
+to either compile the language to JavaScript on the
+server-side or provide an interpreter to run the code on the
+client side.  If the interpreter is needed, Lode will bundle
+the loader package for use on the client.
 
-It will be possible for packages to be hosted or bundled
-for use in web browsers, for either development or
-deployment.  It will be possible to use alternate roots for
-deployment which may in turn contain alternate
-configuration.  It is my hope to leverage Gozala's Teleport
-package for this purpose, and to use Q-JSGI and Q-HTTP as at
-least an option for the server.
+It will be possible for packages to be hosted or bundled for
+use in web browsers, for either development or deployment.
+It will be possible to use alternate roots for deployment
+which may in turn contain alternate configuration.  It is my
+hope to leverage Gozala's [Teleport][1] package for this
+purpose, and to use Q-JSGI and Q-HTTP as at least an option
+for the server.  I also hope to leverage of Joe Walker's
+[Dry Ice][2].
 
-It will be possible for different types of packages to
-receive alternate free-variables like Node's "process" and
-"console".  These must be decoupled from the global object
-so they do not leak ambient authority to sandboxed code in
-the same context.
+[1]: https://github.com/Gozala/teleport
+
+[2]: https://github.com/mozilla/dryice
+
+It will be possible to configure a package so that all of
+the modules in that package receive particular free
+variables from a package, like Node's "process" and
+"console" free variables.  These must be decoupled from the
+global object so they do not leak ambient authority to
+sandboxed code in the same context.
 
 It will be possible for a package to elect that it be run in
 a secure subset of JavaScript, SES5, where all of the
 primordials are frozen and capabilities must be explicitly
-injected into sandboxed packages.
+injected into sandboxed packages.  Other packages will be
+able to note that they are able to run in SES5.
 
 Packages will be able to explicitly declare in
 `package.json` which modules in their module-name space
@@ -336,6 +546,13 @@ It will be possible to load and mix Narwhal packages and
 both old and new NPM package styles.  NPM is in the process
 of altering its API such that "lib" roots and "modules"
 declarations are no longer respected.
+
+The loader API will provide a means to get the JavaScript
+content and other resources in a working set of packages, so
+additional tools can be built to provide alternate
+deployment systems.
+
+I will probably need help with this.
 
 
 History
