@@ -379,3 +379,10 @@ they both have their limitations.
 Lode does not yet conform to the CommonJS/Mappings/C
 specification.  I haven't decided whether it will.
 
+
+License
+-------
+
+Copyright 2009, 2010 Kristopher Michael Kowal
+MIT License (enclosed)
+
