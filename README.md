@@ -156,47 +156,46 @@ Lode Modules
 
 Lode modules have the following free variables:
 
-exports
+## `exports`
 
-    The public API of the module, which can be augmented or
-    replaced.  You can replace a module's exports by
-    returning an alternate object.
-    
-    Assigning to `module.exports` is a Node-specific
-    extension to the CommonJS specification.  To embrace
-    existing code, this practice is presently tolerated in
-    Lode modules, but may eventually be restricted to a
-    legacy loader for NPM-style packages.
+The public API of the module, which can be augmented or
+replaced.  You can replace a module's exports by returning
+an alternate object.
 
-require(id)
+Assigning to `module.exports` is a Node-specific extension
+to the CommonJS specification.  To embrace existing code,
+this practice is presently tolerated in Lode modules, but
+may eventually be restricted to a legacy loader for
+NPM-style packages.
 
-    Returns a module given a relative or top-level module
-    identifier.  A relative module identifier is prefixed
-    with a "./" or a "../".  Module identifiers may use "."
-    and ".." terms to traverse the module name space like
-    file system directories, but ".." above the top of the
-    module name space ("") is not defined and may throw an
-    error.
+## `require(id)`
 
-module
+Returns a module given a relative or top-level module
+identifier.  A relative module identifier is prefixed with a
+"./" or a "../".  Module identifiers may use "." and ".."
+terms to traverse the module name space like file system
+directories, but ".." above the top of the module name space
+("") is not defined and may throw an error.
 
-    The module meta-data object contains information about
-    the module itself.  This may include its `id`, `path`,
-    `directory`, `url`, or a subset thereof depending on
-    where it comes from.  The `module` object is only
-    guaranteed to have an `id`
+## `module`
 
-require.main
+The module meta-data object contains information about the
+module itself.  This may include its `id`, `path`,
+`directory`, `url`, or a subset thereof depending on where
+it comes from.  The `module` object is only guaranteed to
+have an `id`
 
-    If a package is loaded with the `lode` executable, or if
-    it is loaded using the internal API and executed with
-    `pkg.require.exec(id, scope_opt)`, `require.main` is set
-    to the `module` object corresponding to that call.  By
-    convention, you can check whether the module you are
-    presently in is the main module like:
+## `require.main`
 
-        if (require.main === module)
-            main();
+If a package is loaded with the `lode` executable, or if it
+is loaded using the internal API and executed with
+`pkg.require.exec(id, scope_opt)`, `require.main` is set to
+the `module` object corresponding to that call.  By
+convention, you can check whether the module you are
+presently in is the main module like:
+
+    if (require.main === module)
+        main();
 
 The Node-specific `__filename` and `__dirname` free
 variables do not appear in Lode packages.
@@ -211,58 +210,57 @@ they're interoperable with promises from many other
 libraries.
 
 
-loadPackage(path, options)
+## `loadPackage(path, options)`
 
-    returns a promise for the package at the given path.
-    The path must be a directory containing a
-    `package.json`.  The returned package object has
-    `identify(path)` and `require(id)` methods.
+returns a promise for the package at the given path.  The
+path must be a directory containing a `package.json`.  The
+returned package object has `identify(path)` and
+`require(id)` methods.
 
-loadPackageContaining(path, options)
+## `loadPackageContaining(path, options)`
 
-    returns a promise for the package containing the script
-    at the given path.  A subsequent call to
-    `package.identify` can ascertain the corresponding
-    module identifier of the script.  If the script is not
-    inside a package, the returned pseudo-package handles
-    the script as a normal Node module.
+returns a promise for the package containing the script at
+the given path.  A subsequent call to `package.identify` can
+ascertain the corresponding module identifier of the script.
+If the script is not inside a package, the returned
+pseudo-package handles the script as a normal Node module.
 
-package.require(id)
+## `package.require(id)`
 
-    Returns the exports of the corresponding module in the
-    package's name-space.
+Returns the exports of the corresponding module in the
+package's name-space.
 
-package.require.exec(id, scope_opt)
+## `package.require.exec(id, scope_opt)`
 
-    Lode packages provide an exec method that permits a
-    record containing additional free variables to be
-    injected into the main module of the package.  `exec`
-    creates a new instance of the package which does not
-    share state with other `exec` calls.
+Lode packages provide an exec method that permits a record
+containing additional free variables to be injected into the
+main module of the package.  `exec` creates a new instance
+of the package which does not share state with other `exec`
+calls.
 
-package.identify(path)
+## `package.identify(path)`
 
-    Returns a promise for the module identifier
-    corresponding to the given path, suitable for passing to
-    `require` on this package.
+Returns a promise for the module identifier corresponding to
+the given path, suitable for passing to `require` on this
+package.
 
-package.ids
+## `package.ids`
 
-    An array of the module identifiers that this package
-    exposes.  This is used internally for statically linking
-    the package in another package.
+An array of the module identifiers that this package
+exposes.  This is used internally for statically linking the
+package in another package.
 
-options.engines
+## `options.engines`
 
-    An optional array of engine names.  The corresponding
-    engine roots (directories like `package/engine/browser`)
-    will be incorporated into the package, superceding any
-    files in the main package root.
+An optional array of engine names.  The corresponding engine
+roots (directories like `package/engine/browser`) will be
+incorporated into the package, superceding any files in the
+main package root.
 
-options.debug
+## `options.debug`
 
-    If true, the given package will incorporate `debug`
-    roots from any other root.
+If true, the given package will incorporate `debug` roots
+from any other root.
 
 
 Future
@@ -365,6 +363,12 @@ tolerable.
 Narwhal and Tusk are decoupled slightly differently.
 Narwhal performs a search for installed packages when it
 starts. Tusk, like NPM, only fiddles with the filesystem.
+However, Narwhal conflates the module name spaces of all
+installed packages and has to find all of the installed
+packages before running.  Lode only looks at packages that
+are used by the package that contains the main module, and
+while the conflated name space is useful, it provides the
+mappings approach as a safer coupling system.
 
 NPM favors an approach to package management more similar in
 spirit to "mappings" and Narwhal favors one more conducive
