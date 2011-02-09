@@ -1,3 +1,4 @@
+<div style="width: 60em">
 
 LODE
 ====
@@ -17,11 +18,12 @@ packages from deployment, particularly for separate
 deployment and management of CommonJS packages for use on
 the server from those for use on the client.
 
-To use `lode`, install `node` and `npm`. The use `npm` to
+To use `lode`, install [Node][] and [NPM][]. The use `npm` to
 install `lode`.  That will give you a `lode` executable.
 
-- https://github.com/ry/node
-- https://github.com/isaacs/npm
+[Node]: https://github.com/ry/node
+
+[NPM]: https://github.com/isaacs/npm
 
     $ npm install lode
 
@@ -283,7 +285,11 @@ Glossary
   modules.  Lode does not presently provide a bundling
   feature, but it is in the design.
 - catalog: a file on the web that describes a set of
-  packages.
+  packages.  Using a catalog reference in a package
+  configuration provides a level of indirection and permits
+  a package to be loosely coupled to its dependencies,
+  allowing the catalog to be updated independently of the
+  package.
 - compile: to transform a module in a source language, like
   CoffeeScript, and produce JavaScript.
 - context: a JavaScript execution context is a container in
@@ -310,7 +316,7 @@ Glossary
 - engine: A JavaScript embedding like NodeJS (`"node"`),
   Rhino (`"rhino"`), an arbitrary web browser (`"browser"`),
   or a particular web browser.  Engines provide different
-  classes of functionality so packages can be provide
+  classes of functionality so packages can be provided
   alternate modules for different engines.
 - entry-point: the first module executed in an instance of a
   working-set of packages and modules.  The entry-point is
@@ -457,6 +463,18 @@ Glossary
 - turn: the execution of an event in JavaScript. The
   JavaScript event-loop arranges for events to be execute
   din turns, with only one stack of execution at any time.
+- working set: given a package, the transitive closure of
+  all packages that any package in the set depends upon.
+  Given a module, the transitive closure of all modules that
+  any module in the set requires.  Because `require` must be
+  able to return an `exports` object in the same turn, and
+  if loading must be asynchronous, the working set of
+  CommonJS modules must be loaded before any module in the
+  working set is executed or instantiated.  Lode is an
+  asynchronous module loader, and for Lode, the working set
+  of modules is guaranteed to be a subset of the working set
+  of packages, so it is not necessary to browse the source
+  of each module to determine its static dependencies.
 
 
 Future
@@ -511,14 +529,14 @@ It will be possible for packages to be hosted or bundled for
 use in web browsers, for either development or deployment.
 It will be possible to use alternate roots for deployment
 which may in turn contain alternate configuration.  It is my
-hope to leverage Gozala's [Teleport][1] package for this
+hope to leverage Gozala's [Teleport][] package for this
 purpose, and to use Q-JSGI and Q-HTTP as at least an option
 for the server.  I also hope to leverage of Joe Walker's
-[Dry Ice][2].
+[Dry Ice][].
 
-[1]: https://github.com/Gozala/teleport
+[Teleport]: https://github.com/Gozala/teleport
 
-[2]: https://github.com/mozilla/dryice
+[Dry Ice]: https://github.com/mozilla/dryice
 
 It will be possible to configure a package so that all of
 the modules in that package receive particular free
@@ -602,3 +620,4 @@ License
 Copyright 2009, 2010 Kristopher Michael Kowal
 MIT License (enclosed)
 
+</div>
