@@ -1,2 +1,4 @@
-require("bar");
-return "baz";
+define("baz", function (require) {
+    require("bar");
+    return "baz";
+});

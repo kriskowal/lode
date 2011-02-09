@@ -11,5 +11,6 @@
     "requires": {
         "node": "node@0.3",
         "q-fs": ""
-    }
+    },
+    "supportDefine": true
 }

@@ -93,12 +93,16 @@ function loadPackage(
 function identifyPackageStyle(json) {
     if (json.lode) {
         return LodePackage;
+    /*
     } else if (json.mappings) {
         return NodulesPackage;
     } else if (Array.isArray(json.dependencies)) {
         return NarwhalPackage;
     } else {
         return NpmPackage;
+    */
+    } else {
+        return NoPackage
     }
 }
 
@@ -117,42 +121,6 @@ function NoPackage(script, options) {
         }
     };
 }
-
-function NpmPackage(path, json, options) {
-    // dependencies object
-    // main
-    // modules
-    // directories.lib
-    return {
-        "identify": function (path) {
-            return FS.absolute(path);
-        },
-        "require": function (id) {
-            return require(id);
-        }
-    }
-}
-
-function NarwhalPackage(path, json, options) {
-    // dependencies array
-    // ... build overlay of dependencies array
-    //     from the packages directory of the sea
-}
-
-
-function NodulesPackage(path, json, options) {
-    // mappings
-}
-
-var update = function (target, source) {
-    for (var name in source) {
-        target[name] = source[name];
-    }
-};
-
-var concat = function (arrays) {
-    return Array.prototype.concat.apply([], arrays);
-};
 
 // config
 //  include
@@ -192,7 +160,10 @@ function LodePackage(basePath, config, options, configs, catalog) {
     var linkage = link(basePath, config, options, loaders, configs, catalog, factories);
     return Q.when(linkage, function (linkage) {
         // construct a requirer
-        var require = Require({"factories": factories});
+        var require = Require({
+            "factories": factories,
+            "supportDefine": config.supportDefine
+        });
         // names of all keys for further linkage
         var ids = Object.keys(factories);
         // permit gc
@@ -251,8 +222,7 @@ function link(basePath, config, options, loaders, configs, catalog, factories) {
         // own linkage
         var roots = findRoots(basePath, config, options);
         var finds = findModules(roots, config);
-        return Q.when(finds)
-        .then(function (finds) {
+        return Q.when(finds, function (finds) {
             return loadModules(finds, loaders);
         })
         .then(function (modules) {
@@ -279,7 +249,6 @@ function link(basePath, config, options, loaders, configs, catalog, factories) {
             });
 
         });
-            
 
     });
 }
@@ -422,6 +391,16 @@ function loadMappings(basePath, mappings, options, configs, catalog) {
     })
     .then(Q.deep)
 }
+
+function update(target, source) {
+    for (var name in source) {
+        target[name] = source[name];
+    }
+};
+
+function concat(arrays) {
+    return Array.prototype.concat.apply([], arrays);
+};
 
 main();
 

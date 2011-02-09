@@ -2,5 +2,6 @@
     "lode": true,
     "includes": [
         "../bar"
-    ]
+    ],
+    "supportDefine": true
 }

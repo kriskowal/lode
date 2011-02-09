@@ -167,6 +167,24 @@ tolerated indefinitely, but eventually an record that
 provides various styles of configuration information for the
 dependency will be accepted in-place.
 
+A package may opt-in to support the RequireJS `define`
+boilerplate in modules.
+
+    {
+        "supportDefine": true
+    }
+
+With this option enabled, modules will have a `define` free
+variable.  The `define` function takes a callback as its
+last argument that in turn accepts `require`, `exports`, and
+`module`.  All other arguments to `define` are ignored, and
+the callback is called.  If the callback returns an object,
+that object replaces the module's given exports object.
+
+    define(id?, deps?, function (require, exports, module) {
+        return exports;
+    });
+
 
 Lode Modules
 ------------
@@ -321,7 +339,12 @@ Glossary
   references.
 - define: a function name used by RequireJS and some
   CommonJS proposals to permit a hand-written module to be
-  loaded with script-injection.
+  loaded with script-injection.  `define()` boilerplate,
+  where the last argument is a callback that receives
+  `require`, `exports`, and `module` as arguments, is
+  accepted by Lode to encourage interoperability with code
+  targetting RequireJS, but the dependency array and
+  optional module identifier arguments are ignored.
 - dependencies: particuarly package dependencies, including
   mappings, includes, and eventually alternate module loader
   packages.  In a package configuration, dependencies are
@@ -569,10 +592,6 @@ Packages will be able to explicitly declare in
 `package.json` which modules in their module-name space
 should be statically linked by mappings and includes.
 Whether this will be mandatory remains undecided.
-
-With an explicit declaration in `package.json`, modules with
-client-side boilerplate for systems like RequireJS will be
-tolerated.
 
 It will be possible to load and mix Narwhal packages and
 both old and new NPM package styles.  NPM is in the process
