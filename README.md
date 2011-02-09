@@ -1,4 +1,3 @@
-<div style="width: 60em">
 
 LODE
 ====
@@ -620,4 +619,3 @@ License
 Copyright 2009, 2010 Kristopher Michael Kowal
 MIT License (enclosed)
 
-</div>
