@@ -10,9 +10,8 @@ general.
 To use `lode`, install `node` and `npm`. The use `npm` to
 install `lode`.  That will give you a `lode` executable.
 
-    https://github.com/ry/node
-
-    https://github.com/isaacs/npm
+- https://github.com/ry/node
+- https://github.com/isaacs/npm
 
     $ npm install lode
 
