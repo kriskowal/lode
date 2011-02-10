@@ -6,5 +6,6 @@ define(function (require, exports, module) {
     console.log(require("foo/bar"));
     console.log(require("bar"));
     console.log(require("baz"));
+    console.log(require("qux"));
     console.log('test', a, require.main);
 });

@@ -3,6 +3,7 @@ var Q = require("q/util");
 var FS = require("q-fs");
 var Require = require("./lib/require").Require;
 var Module = require("./lib/module").Module;
+var ZIP = require("./lib/zip-fs");
 
 function main() {
     var script = process.argv[2] || '';
@@ -79,7 +80,36 @@ function findPackage(path) {
 }
 
 exports.loadPackage = loadPackage;
-function loadPackage(
+function loadPackage(dependency, options, configs, catalog, file) {
+    dependency = Dependency(FS, dependency);
+    if (dependency.path)
+        return loadPackagePath(dependency.path, options, configs, catalog, file);
+    if (dependency.archive)
+        return loadPackageArchive(dependency, options, configs, catalog);
+    throw new Error("Cannot load package described by " + JSON.stringify(dependency));
+}
+
+function loadPackageArchive(dependency, options, configs, catalog) {
+    var path = FS.join(dependency.basePath, dependency.archive);
+    path = FS.canonical(path);
+    catalog = catalog || {};
+    configs = configs || {};
+    return Q.when(path, function (path) {
+        if (catalog[path])
+            return catalog[path];
+        return catalog[path] = Q.when(FS.read(path, "rb"), function (data) {
+            var fs = ZIP.Fs(data).reroot();
+            return Q.when(fs.read('package.json', 'r'), function (content) {
+                var config = JSON.parse(content);
+                config.fs = fs;
+                var Pkg = identifyPackageStyle(config);
+                return Pkg("", config, options, configs, catalog);
+            });
+        });
+    });
+}
+
+function loadPackagePath(
     path,
     options,
     configs, // optional package.json cache
@@ -105,8 +135,7 @@ function loadPackage(
         }
         return catalog[path] = Q.when(config, function (config) {
             var Pkg = identifyPackageStyle(config);
-            var pkg = Pkg(path, config, options, configs, catalog);
-            return pkg;
+            return Pkg(path, config, options, configs, catalog);
         });
     });
 }
@@ -156,6 +185,7 @@ function NoPackage(script, options) {
 function LodePackage(basePath, config, options, configs, catalog) {
     if (typeof config.lode === "object")
         update(config, config.lode);
+    var fs = config.fs || FS;
     // a memo for discovered package.json information
     //configs = configs || {};
     // a memo for instantiated packages in this inclusion context
@@ -196,7 +226,8 @@ function LodePackage(basePath, config, options, configs, catalog) {
         if (config.public) {
             config.public.forEach(function (id) {
                 if (!factories[id])
-                    throw new Error("The public module: " + id + ", does not exit.");
+                    throw new Error("The public module: " + id +
+                        ", does not exit.");
             });
         }
 
@@ -207,11 +238,12 @@ function LodePackage(basePath, config, options, configs, catalog) {
             "ids": ids,
             "linkage": linkage,
             "identify": function (path) {
-                return Q.when(FS.canonical(path), function (path) {
+                return Q.when(fs.canonical(path), function (path) {
                     if (path === basePath && config.main)
                         return "";
                     if (!idsByPath[path])
-                        return Q.reject("path " + JSON.stringify(path) + " does not correspond to a module");
+                        return Q.reject("path " + JSON.stringify(path) +
+                            " does not correspond to a module");
                     return idsByPath[path];
                 });;
             },
@@ -229,16 +261,17 @@ function LodePackage(basePath, config, options, configs, catalog) {
 //      link the mappings
 
 function link(basePath, config, options, loaders, configs, catalog, factories) {
+    var fs = config.fs || FS;
 
-    var mappings = loadMappings(basePath, config.mappings, options, configs, catalog);
+    var mappings = loadMappings(fs, basePath, config.mappings, options, configs, catalog);
 
     var linkage = {};
 
     var includes = config.includes || [];
     return Q.ref(includes.map(function (include) {
-        var path = FS.join(basePath, include);
+        var dependency = Dependency(fs, include, basePath);
         return loadPackage(
-            path,
+            dependency,
             options,
             configs,
             catalog
@@ -264,7 +297,7 @@ function link(basePath, config, options, loaders, configs, catalog, factories) {
         var roots = findRoots(basePath, config, options);
         var finds = findModules(roots, config);
         return Q.when(finds, function (finds) {
-            return loadModules(finds, loaders);
+            return loadModules(fs, finds, loaders);
         })
         .then(function (modules) {
 
@@ -306,7 +339,7 @@ function link(basePath, config, options, loaders, configs, catalog, factories) {
                 Object.keys(mappings).forEach(function (baseId) {
                     var pkg = mappings[baseId];
                     pkg.ids.forEach(function (id) {
-                        linkage[FS.join(baseId, id)] = {
+                        linkage[fs.join(baseId, id)] = {
                             "package": pkg.path,
                             "id": id,
                             "factory": function () {
@@ -326,10 +359,11 @@ function link(basePath, config, options, loaders, configs, catalog, factories) {
 
 function findRoots(basePath, config, options) {
     var roots = [""];
+    var fs = config.fs || FS;
     if (options.engines) {
         roots = concat(roots.map(function (root) {
             var roots = options.engines.map(function (engine) {
-                return FS.join(root, "engines", engine);
+                return fs.join(root, "engines", engine);
             });
             roots.unshift(root);
             return roots;
@@ -339,31 +373,32 @@ function findRoots(basePath, config, options) {
         roots = concat(roots.map(function (root) {
             return [
                 root,
-                FS.join(root, "debug")
+                fs.join(root, "debug")
             ];
         }));
     }
     return roots.map(function (root) {
-        return FS.join(basePath, root);
+        return fs.join(basePath, root);
     });
 }
 
 function findModules(roots, config) {
     // for each root, find all of the files within
     // that root
+    var fs = config.fs || FS;
     return Q.when(roots.map(function (root) {
 
         var mains;
         if (config.main) {
-            var main = FS.join(root, config.main);
-            var isFile = FS.isFile(main);
+            var main = fs.join(root, config.main);
+            var isFile = fs.isFile(main);
             mains = Q.when(isFile, function (isFile) {
-                var extension = FS.extension(main);
+                var extension = fs.extension(main);
                 if (isFile) {
                     return [{
                         "id": "",
                         "extension": extension,
-                        "path": FS.canonical(main)
+                        "path": fs.canonical(main)
                     }];
                 } else {
                     return [];
@@ -373,15 +408,15 @@ function findModules(roots, config) {
             mains = [];
         }
 
-        var lib = FS.join(root, "lib");
-        var paths = FS.listTree(lib, function (path, stat) {
+        var lib = fs.join(root, "lib");
+        var paths = fs.listTree(lib, function (path, stat) {
             return stat.isFile();
         });
         var modules = Q.when(paths, function (paths) {
             return paths.map(function (path) {
-                var extension = FS.extension(path);
-                var id = FS.base(FS.relative(root, path), extension);
-                return Q.when(FS.canonical(path), function (canonical) {
+                var extension = fs.extension(path);
+                var id = fs.base(fs.relative(root, path), extension);
+                return Q.when(fs.canonical(path), function (canonical) {
                     return {
                         "id": id,
                         "extension": extension,
@@ -402,7 +437,7 @@ function findModules(roots, config) {
     .then(concat)
 }
 
-function loadModules(descs, loaders) {
+function loadModules(fs, descs, loaders) {
     // find all of the loader candidates for each
     // file based on their extensions
     var lookup = {};
@@ -426,7 +461,7 @@ function loadModules(descs, loaders) {
                     "path": path,
                     "id": id,
                     "loader": loader.loader,
-                    "content": FS.read(path)
+                    "content": fs.read(path, "r", "UTF-8")
                 }
                 byId[id] = module;
                 byPath[path] = module;
@@ -441,15 +476,14 @@ function loadModules(descs, loaders) {
     });
 }
 
-function loadMappings(basePath, mappings, options, configs, catalog) {
+function loadMappings(fs, basePath, mappings, options, configs, catalog) {
     if (!mappings)
         return {};
     var packages = Object.keys(mappings).map(function (id) {
-        var path = mappings[id];
-        path = FS.join(basePath, path);
+        var dependency = Dependency(fs, mappings[id], basePath);
         return {
             "id": id,
-            "package": loadPackage(path, options, configs, catalog)
+            "package": loadPackage(dependency, options, configs, catalog)
         };
     });
     return Q.deep(packages)
@@ -461,6 +495,16 @@ function loadMappings(basePath, mappings, options, configs, catalog) {
         return packages;
     })
     .then(Q.deep)
+}
+
+function Dependency(fs, dependency, basePath) {
+    if (typeof dependency === "string")
+        dependency = {"path": dependency};
+    if (basePath)
+        dependency.basePath = basePath;
+    if (dependency.path && dependency.basePath)
+        dependency.path = fs.join(dependency.basePath, dependency.path);
+    return dependency;
 }
 
 function update(target, source) {

@@ -25,8 +25,9 @@
         "url": "http://github.com/kriskowal/lode.git"
     },
     "dependencies": {
-        "q": "0.2.8",
-        "q-fs": "0.0.9"
+        "q": ">=0.2.8",
+        "q-fs": ">=0.0.13",
+        "zip": ">=0.0.0"
     },
     "engines": {
         "node": ">=0.2.0"

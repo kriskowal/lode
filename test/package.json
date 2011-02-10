@@ -7,7 +7,8 @@
         "includes/baz"
     ],
     "mappings": {
-        "foo": "mappings/foo"
+        "foo": "mappings/foo",
+        "qux": {"archive": "mappings/qux.zip"}
     },
     "requires": {
         "node": "node@0.3",
