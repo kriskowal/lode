@@ -1,7 +1,7 @@
 {
     "name": "lode",
     "description": "",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "homepage": "http://github.com/kriskowal/lode/",
     "author": "Kris Kowal <kris@cixar.com> (http://github.com/kriskowal/)",
     "contributors": [
@@ -26,7 +26,7 @@
     },
     "dependencies": {
         "q": ">=0.2.8",
-        "q-fs": ">=0.0.13",
+        "q-fs": ">=0.0.14",
         "zip": ">=0.0.0"
     },
     "engines": {
