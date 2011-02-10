@@ -156,16 +156,34 @@ configuration properties for other systems, the "lode"
 property may be an object that shallowly overrides
 individual properties of the configuration.
 
-The package may provide "includes" and "mappings"
-properties.  "includes" must be an array of dependencies and
-"mappings" must be an object that maps module subtrees to
-dependencies.
+A package's "main" module may be specified with the `"main"`
+property in `package.json`, as a path relative to the
+package root, including the file's extension.
+
+    {
+        "main": "foo.js"
+    }
+
+The package may provide `"includes"` and `"mappings"`
+properties.  `"includes"` must be an array of dependencies
+and `"mappings"` must be an object that maps module subtrees
+to dependencies.
 
 For the time being, dependencies are paths relative to the
 package root.  These path properties will probably be
 tolerated indefinitely, but eventually an record that
 provides various styles of configuration information for the
 dependency will be accepted in-place.
+
+    {
+        "main": "foo.js",
+        "mappings": {
+            "bar": "mappings/bar"
+        },
+        "includes": [
+            "includes/baz"
+        ]
+    }
 
 A package may opt-in to support the RequireJS `define`
 boilerplate in modules.
@@ -184,6 +202,14 @@ that object replaces the module's given exports object.
     define(id?, deps?, function (require, exports, module) {
         return exports;
     });
+
+A package may opt-in to make the `define` wrapper mandatory,
+in which case failing to call define will cause a module
+factory to throw an error.
+
+    {
+        "requireDefine": true
+    }
 
 
 Lode Modules
@@ -233,7 +259,10 @@ presently in is the main module like:
         main();
 
 The Node-specific `__filename` and `__dirname` free
-variables do not appear in Lode packages.
+variables do not appear in Lode packages.  Also, Lode does
+not respect the Node convention that a `foo/index.js` file
+gets linked to the module identifier `foo` in place of
+`foo.js`.
 
 
 API
@@ -452,17 +481,15 @@ Glossary
 - require: a function provided as a free-variable to
   CommonJS modules that permits the module to acquire the
   exports of another module.
-- root: a directory in a package including the top-most
-  directory of a package, and including other
-  sub-directories of the package depending on the loader
-  options, for example, including the
-  `{root}/engines/{engine}` directory of any other root and
-  configured engine name like `node` or `browser`, and the
-  `{root}/debug` directory of any other root if a loader is
-  configured for debugging.  Roots are prioritized from most
-  to least specific and searched for resources, particularly
-  but not limited to library directories where modules are
-  found.
+- root: the top-most directory of a package is the `root`,
+  but there may be others depending on the loader options,
+  for example, including the `{root}/engines/{engine}`
+  directory of any other root and configured engine name
+  like `node` or `browser`, and the `{root}/debug` directory
+  of any other root if a loader is configured for debugging.
+  Roots are prioritized from most to least specific and
+  searched for resources, particularly but not limited to
+  library directories where modules are found.
 - script-injection: a technique for asynchronously
   downloading and executing potentially cross-domain
   JavaScript in a web browser.

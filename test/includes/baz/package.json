@@ -3,5 +3,5 @@
     "includes": [
         "../bar"
     ],
-    "supportDefine": true
+    "requireDefine": true
 }

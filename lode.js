@@ -162,7 +162,7 @@ function LodePackage(basePath, config, options, configs, catalog) {
         // construct a requirer
         var require = Require({
             "factories": factories,
-            "supportDefine": config.supportDefine
+            "supportDefine": config.supportDefine || config.requireDefine
         });
         // names of all keys for further linkage
         var ids = Object.keys(factories);
@@ -230,7 +230,27 @@ function link(basePath, config, options, loaders, configs, catalog, factories) {
             var ids = Object.keys(modules.byId);
             ids.forEach(function (id) {
                 var module = modules.byId[id];
-                factories[id] = module.loader.compile(module.content, module.path);
+                var factory = module.loader.compile(module.content, module.path);
+                if (config.requireDefine) {
+                    factory = (function (factory) {
+                        return function (inject) {
+                            var define = inject.define;
+                            var defined;
+                            inject.define = function () {
+                                defined = true;
+                                return define.apply(this, arguments);
+                            };
+                            try {
+                                return factory(inject);
+                            } finally {
+                                if (!defined) {
+                                    throw new Error("module failed to call defined: " + inject.module.id);
+                                }
+                            }
+                        };
+                    })(factory);
+                }
+                factories[id] = factory;
             });
 
             // mappings linkage
