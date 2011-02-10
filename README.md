@@ -185,6 +185,15 @@ dependency will be accepted in-place.
         ]
     }
 
+By default, all modules in a package are publically linked.
+The set of public module identifiers can be restricted by
+providing a `"public"` array of top-level module identifiers
+in the package configuration.
+
+    {
+        "public": ["foo", "bar", "baz"]
+    }
+
 A package may opt-in to support the RequireJS `define`
 boilerplate in modules.
 
@@ -288,6 +297,44 @@ the given path.  A subsequent call to `package.identify` can
 ascertain the corresponding module identifier of the script.
 If the script is not inside a package, the returned
 pseudo-package handles the script as a normal Node module.
+
+## `linkPackage(path, options)`
+
+returns a promise for the full linkage tree of the given
+package.  A linkage tree contains all of the involved
+packages, identified by their canonical paths, mapped to the
+corresponding package data.
+
+Each package descriptor has `path`, `ids`, and `linkage`
+properties.  The `path` the unique path of the package.  The
+`ids` are all of the public module identifiers, suitable for
+linking to other packages.  The `linkage` is a mapping from
+top-level module identifiers to module data.
+
+Each module descriptor is either for an internal module or
+an external module.
+
+If the module is linked to another package, the descriptor
+will have `package` and `id` properties for the
+corresponding module.  The `package` property is the unique
+path to the package, suitable for indexing off the root
+object.
+
+If the module is provided by the containing package, the
+descriptor will have `path`, `content`, and `loader`
+properties.  The `path` is the canonical path of the file
+from which the module comes.  `content` is the text of the
+module, regardless of the language it was written in.  The
+`loader` is an object that can either `compile` the content
+to a factory, `translate` it to JavaScript, or refer to a
+package with a suitabe interpreter for either the client or
+server-side.
+
+Presently, the only loader available is a JavaScript loader
+that handles the `""` and `".js"` extensions of modules and
+can only `compile` modules to factories.  Loaders will
+eventually be configurable per package.
+
 
 ## `package.require(id)`
 
@@ -467,11 +514,11 @@ Glossary
   the global object and `Object` and `Array` constructors.
 - public: the set of top-level module identifiers from one
   package that are linked to a dependent package either
-  through mappings or includes.  Presently, all modules in a
-  package, including their includes and mappings, are
-  publically linked, but eventually it will be possible to
-  restrict the list of publically linked identifiers in the
-  package configuration.
+  through mappings or includes.  By default, all modules in
+  a package, including their includes and mappings, are
+  publically linked, but the list of publically linked
+  identifiers can be restricted with the `public` property
+  in the package configuration.
 - registry: a web service for searching, downloading, and
   posting packages.
 - relative: a class of module identifier that begins with

@@ -1,0 +1,91 @@
+{
+    "/Users/kris/js/lode/test": {
+        "path": "/Users/kris/js/lode/test",
+        "ids": [
+            ""
+        ],
+        "linkage": {
+            "bar": {
+                "id": "bar"
+            },
+            "baz": {
+                "id": "baz"
+            },
+            "": {
+                "path": "/Users/kris/js/lode/test/main.js",
+                "content": "define(function (require, exports, module) {\n    var a = require(\"./a\")\n    exports.b = 10;\n    console.log(module);\n    console.log(require(\"foo\"));\n    console.log(require(\"foo/bar\"));\n    console.log(require(\"bar\"));\n    console.log(require(\"baz\"));\n    console.log('test', a, require.main);\n});\n",
+                "loader": {}
+            },
+            "a": {
+                "path": "/Users/kris/js/lode/test/lib/a.js",
+                "content": "module.exports = 10;\n",
+                "loader": {}
+            },
+            "b": {
+                "path": "/Users/kris/js/lode/test/lib/b.js",
+                "content": "",
+                "loader": {}
+            },
+            "c": {
+                "path": "/Users/kris/js/lode/test/lib/c.js",
+                "content": "",
+                "loader": {}
+            },
+            "foo": {
+                "id": ""
+            },
+            "foo/bar": {
+                "id": "bar"
+            }
+        }
+    },
+    "/Users/kris/js/lode/test/mappings/foo": {
+        "path": "/Users/kris/js/lode/test/mappings/foo",
+        "ids": [
+            "",
+            "bar"
+        ],
+        "linkage": {
+            "": {
+                "path": "/Users/kris/js/lode/test/mappings/foo/foo.js",
+                "content": "return \"foo\";\n",
+                "loader": {}
+            },
+            "bar": {
+                "path": "/Users/kris/js/lode/test/mappings/foo/lib/bar.js",
+                "content": "return 'bar';\n",
+                "loader": {}
+            }
+        }
+    },
+    "/Users/kris/js/lode/test/includes/bar": {
+        "path": "/Users/kris/js/lode/test/includes/bar",
+        "ids": [
+            "bar"
+        ],
+        "linkage": {
+            "bar": {
+                "path": "/Users/kris/js/lode/test/includes/bar/lib/bar.js",
+                "content": "return \"bar\";\n",
+                "loader": {}
+            }
+        }
+    },
+    "/Users/kris/js/lode/test/includes/baz": {
+        "path": "/Users/kris/js/lode/test/includes/baz",
+        "ids": [
+            "bar",
+            "baz"
+        ],
+        "linkage": {
+            "bar": {
+                "id": "bar"
+            },
+            "baz": {
+                "path": "/Users/kris/js/lode/test/includes/baz/lib/baz.js",
+                "content": "define(\"baz\", function (require) {\n    require(\"bar\");\n    return \"baz\";\n});\n",
+                "loader": {}
+            }
+        }
+    }
+}

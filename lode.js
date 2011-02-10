@@ -17,6 +17,28 @@ function main() {
     }).then(null, Q.error);
 }
 
+function main2() {
+    var path = process.argv[2] || '';
+    var options = {
+        "engines": [],
+        "debug": false
+    };
+    var catalog = linkPackage(path, options);
+    return Q.when(catalog, function (catalog) {
+        console.log(JSON.stringify(catalog, null, 4));
+    }).then(null, Q.error);
+}
+
+exports.linkPackage = linkPackage;
+function linkPackage(path, options) {
+    var configs = {};
+    var catalog = {};
+    var pkg = loadPackage(path, options, {}, catalog);
+    return Q.when(pkg, function (pkg) {
+        return Q.deep(catalog);
+    });
+}
+
 // path can be the path of the package or
 // the path of something in the package
 exports.loadPackageContaining = loadPackageContaining;
@@ -67,7 +89,7 @@ function loadPackage(
     path = FS.canonical(path);
     catalog = catalog || {};
     configs = configs || {};
-    catalog[path] = Q.when(path, function (path) {
+    return Q.when(path, function (path) {
         if (catalog[path])
             return catalog[path];
         var config = configs[path];
@@ -81,13 +103,12 @@ function loadPackage(
             });
             content = undefined;
         }
-        return Q.when(config, function (config) {
+        return catalog[path] = Q.when(config, function (config) {
             var Pkg = identifyPackageStyle(config);
             var pkg = Pkg(path, config, options, configs, catalog);
             return pkg;
         });
     });
-    return catalog[path];
 }
 
 function identifyPackageStyle(json) {
@@ -139,8 +160,6 @@ function LodePackage(basePath, config, options, configs, catalog) {
     //configs = configs || {};
     // a memo for instantiated packages in this inclusion context
     //catalog = catalog || {};
-    // module factories for this package
-    var factories = {};
     // paths to identifiers, local to this package
     var idsByPath = {};
     // loaders
@@ -157,20 +176,36 @@ function LodePackage(basePath, config, options, configs, catalog) {
             "loader": jsLoader
         }
     ];
-    var linkage = link(basePath, config, options, loaders, configs, catalog, factories);
+    var linkage = link(basePath, config, options, loaders, configs, catalog);
     return Q.when(linkage, function (linkage) {
+
+        // map the factories out of the linkage
+        var factories = {};
+        Object.keys(linkage).forEach(function (id) {
+            factories[id] = linkage[id].factory;
+        });
+
         // construct a requirer
         var require = Require({
             "factories": factories,
             "supportDefine": config.supportDefine || config.requireDefine
         });
-        // names of all keys for further linkage
-        var ids = Object.keys(factories);
+
+        // names of all keys for public linkage
+        var ids = config.public || Object.keys(factories);
+        if (config.public) {
+            config.public.forEach(function (id) {
+                if (!factories[id])
+                    throw new Error("The public module: " + id + ", does not exit.");
+            });
+        }
+
         // permit gc
         factories = undefined;
         return {
-            "id": basePath,
+            "path": basePath,
             "ids": ids,
+            "linkage": linkage,
             "identify": function (path) {
                 return Q.when(FS.canonical(path), function (path) {
                     if (path === basePath && config.main)
@@ -197,6 +232,8 @@ function link(basePath, config, options, loaders, configs, catalog, factories) {
 
     var mappings = loadMappings(basePath, config.mappings, options, configs, catalog);
 
+    var linkage = {};
+
     var includes = config.includes || [];
     return Q.ref(includes.map(function (include) {
         var path = FS.join(basePath, include);
@@ -213,8 +250,12 @@ function link(basePath, config, options, loaders, configs, catalog, factories) {
         // included linkage
         includes.forEach(function (pkg) {
             pkg.ids.forEach(function (id) {
-                factories[id] = function () {
-                    return pkg.require(id);
+                linkage[id] = {
+                    "package": pkg.id,
+                    "id": id,
+                    "factory": function () {
+                        return pkg.require(id);
+                    }
                 };
             });
         });
@@ -250,7 +291,12 @@ function link(basePath, config, options, loaders, configs, catalog, factories) {
                         };
                     })(factory);
                 }
-                factories[id] = factory;
+                linkage[id] = {
+                    "path": module.path,
+                    "content": module.content,
+                    "loader": module.loader,
+                    "factory": factory
+                };
             });
 
             // mappings linkage
@@ -260,12 +306,17 @@ function link(basePath, config, options, loaders, configs, catalog, factories) {
                 Object.keys(mappings).forEach(function (baseId) {
                     var pkg = mappings[baseId];
                     pkg.ids.forEach(function (id) {
-                        factories[FS.join(baseId, id)] = function () {
-                            return pkg.require(id);
+                        linkage[FS.join(baseId, id)] = {
+                            "package": pkg.id,
+                            "id": id,
+                            "factory": function () {
+                                return pkg.require(id);
+                            }
                         };
                     });
                 });
 
+                return linkage;
             });
 
         });
@@ -422,5 +473,5 @@ function concat(arrays) {
     return Array.prototype.concat.apply([], arrays);
 };
 
-main();
+main2();
 

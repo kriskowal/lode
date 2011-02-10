@@ -1,6 +1,7 @@
 {
     "lode": true,
     "main": "main.js",
+    "public": [""],
     "includes": [
         "includes/bar",
         "includes/baz"
