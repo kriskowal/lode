@@ -105,7 +105,7 @@ the package depending on several initialization options.
 
 A package can contain several roots.  Which roots are
 incorporated depends on the loader options.  For example, a
-a package can be configured for use in web browsers with
+package can be configured for use in web browsers with
 provisions for debugging.  If so, a package may provide
 alternate modules by providing roots at `debug`,
 `engines/browser`, and `engines/browser/debug`.  For
@@ -120,7 +120,11 @@ precedence.
 The module name-space of a package is populated from several
 sources: the modules contained in its own roots, "mappings",
 and "includes".  In order of precedence, they are
-"mappings", own modules, and "includes".
+"mappings", own modules, and "includes".  All relative
+module identifiers are computed relative to the module
+name-space, not the file-system name-space from which they
+are derrived, so a relative module identifier can traverse
+into mappings and includes.
 
 Mappings are packages that are included on a sub-tree of the
 module identifier space, as configured in the package's
@@ -171,7 +175,7 @@ to dependencies.
 
 For the time being, dependencies are paths relative to the
 package root.  These path properties will probably be
-tolerated indefinitely, but eventually an record that
+tolerated indefinitely, but eventually a record that
 provides various styles of configuration information for the
 dependency will be accepted in-place.
 
@@ -643,11 +647,14 @@ which may in turn contain alternate configuration.  It is my
 hope to leverage Gozala's [Teleport][] package for this
 purpose, and to use Q-JSGI and Q-HTTP as at least an option
 for the server.  I also hope to leverage of Joe Walker's
-[Dry Ice][].
+[Dry Ice][], through which I've discovered [UglifyJS][]'s
+JavaScript API which I would also like to take advantage of.
 
 [Teleport]: https://github.com/Gozala/teleport
 
 [Dry Ice]: https://github.com/mozilla/dryice
+
+[UglifyJS]: https://github.com/mishoo/UglifyJS
 
 It will be possible to configure a package so that all of
 the modules in that package receive particular free
