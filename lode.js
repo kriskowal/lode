@@ -251,7 +251,7 @@ function link(basePath, config, options, loaders, configs, catalog, factories) {
         includes.forEach(function (pkg) {
             pkg.ids.forEach(function (id) {
                 linkage[id] = {
-                    "package": pkg.id,
+                    "package": pkg.path,
                     "id": id,
                     "factory": function () {
                         return pkg.require(id);
@@ -307,7 +307,7 @@ function link(basePath, config, options, loaders, configs, catalog, factories) {
                     var pkg = mappings[baseId];
                     pkg.ids.forEach(function (id) {
                         linkage[FS.join(baseId, id)] = {
-                            "package": pkg.id,
+                            "package": pkg.path,
                             "id": id,
                             "factory": function () {
                                 return pkg.require(id);
@@ -473,5 +473,5 @@ function concat(arrays) {
     return Array.prototype.concat.apply([], arrays);
 };
 
-main2();
+main();
 

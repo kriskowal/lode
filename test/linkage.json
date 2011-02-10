@@ -1,14 +1,16 @@
 {
-    "/Users/kris/js/lode/test": {
-        "path": "/Users/kris/js/lode/test",
+    "/Users/kris/js/lode/test/": {
+        "path": "/Users/kris/js/lode/test/",
         "ids": [
             ""
         ],
         "linkage": {
             "bar": {
+                "package": "/Users/kris/js/lode/test/includes/baz",
                 "id": "bar"
             },
             "baz": {
+                "package": "/Users/kris/js/lode/test/includes/baz",
                 "id": "baz"
             },
             "": {
@@ -32,9 +34,11 @@
                 "loader": {}
             },
             "foo": {
+                "package": "/Users/kris/js/lode/test/mappings/foo",
                 "id": ""
             },
             "foo/bar": {
+                "package": "/Users/kris/js/lode/test/mappings/foo",
                 "id": "bar"
             }
         }
@@ -58,6 +62,24 @@
             }
         }
     },
+    "/Users/kris/js/lode/test/includes/baz": {
+        "path": "/Users/kris/js/lode/test/includes/baz",
+        "ids": [
+            "bar",
+            "baz"
+        ],
+        "linkage": {
+            "bar": {
+                "package": "/Users/kris/js/lode/test/includes/bar",
+                "id": "bar"
+            },
+            "baz": {
+                "path": "/Users/kris/js/lode/test/includes/baz/lib/baz.js",
+                "content": "define(\"baz\", function (require) {\n    require(\"bar\");\n    return \"baz\";\n});\n",
+                "loader": {}
+            }
+        }
+    },
     "/Users/kris/js/lode/test/includes/bar": {
         "path": "/Users/kris/js/lode/test/includes/bar",
         "ids": [
@@ -67,23 +89,6 @@
             "bar": {
                 "path": "/Users/kris/js/lode/test/includes/bar/lib/bar.js",
                 "content": "return \"bar\";\n",
-                "loader": {}
-            }
-        }
-    },
-    "/Users/kris/js/lode/test/includes/baz": {
-        "path": "/Users/kris/js/lode/test/includes/baz",
-        "ids": [
-            "bar",
-            "baz"
-        ],
-        "linkage": {
-            "bar": {
-                "id": "bar"
-            },
-            "baz": {
-                "path": "/Users/kris/js/lode/test/includes/baz/lib/baz.js",
-                "content": "define(\"baz\", function (require) {\n    require(\"bar\");\n    return \"baz\";\n});\n",
                 "loader": {}
             }
         }
