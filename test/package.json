@@ -10,9 +10,17 @@
         "foo": "mappings/foo",
         "qux": {"archive": "mappings/qux.zip"}
     },
-    "requires": {
-        "node": "node@0.3",
-        "q-fs": ""
-    },
+    "scope": [
+        {"capability": "console"},
+        {"capability": "node@0.4.0"}
+    ],
+    "loaders": [
+        {"extension": ""},
+        {"extension": ".js"},
+        {"extension": ".coffee", "package": {
+            "npm": "coffee-script"
+        }}
+    ],
+    "registry": "http://npm",
     "supportDefine": true
 }

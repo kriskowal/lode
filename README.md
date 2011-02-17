@@ -716,7 +716,11 @@ installed packages and has to find all of the installed
 packages before running.  Lode only looks at packages that
 are used by the package that contains the main module, and
 while the conflated name space is useful, it provides the
-mappings approach as a safer coupling system.
+mappings approach as a safer coupling system, limits the
+cost of searching for included packages by scoping them to
+individual packages, and limits the risk of module
+name-space conflation by only linking explicitly included
+packages instead of all installed packages.
 
 NPM favors an approach to package management more similar in
 spirit to "mappings" and Narwhal favors one more conducive
