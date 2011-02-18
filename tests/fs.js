@@ -94,11 +94,14 @@ var extensions = [
     test(FS.join(base, "nested.zip#package.1.zip"), oracles[1]);
     test(FS.join(base, "nested.zip#package.2.zip"), oracles[2]);
 });
+test("http://localhost:{port}/packages.zip#package.1/1/2/3", oracles[1])
+test("http://localhost:{port}/nested.zip#package.1.zip", oracles[1])
+test("http://localhost:{port}/nested.zip#package.2.zip", oracles[2])
 
 function test(path, oracle) {
     exports['test ' + path] = function (ASSERT, done) {
         path = path.replace("{port}", port);
-        var fs = PACKAGE_FS.get(path, FS);
+        var fs = PACKAGE_FS.get(path, FS, HTTP);
         Q.when(fs, function (fs) {
             var actuals = {
                 "list": fs.list(""),
