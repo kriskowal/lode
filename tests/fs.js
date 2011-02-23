@@ -4,6 +4,7 @@ var PACKAGE_FS = require("../lib/fs");
 var FS = require("q-fs");
 var HTTP = require("q-http");
 var JAQUE = require("jaque");
+var Root = require("q-fs/root").Fs;
 
 // {path}, file:{path}, file:/{path}, file:///{path}, http:
 // {directory}, {zip}, {zip}#, {zip}#{path}, {zip}#/{path}, {zip}#{zip}#{path}
@@ -16,12 +17,12 @@ var oracles = {
     1: {
         "list": ["package.json", "a", "b", "c"].sort(),
         "listTree": [".", "package.json", "a", "b", "c", "a/A", "b/B", "c/C"].sort(),
-        "read": ""
+        "read": "{}\n"
     },
     2: {
         "list": ["package.json"],
         "listTree": [".", "package.json"].sort(),
-        "read": ""
+        "read": "{}\n"
     }
 };
 
@@ -101,14 +102,18 @@ test("http://localhost:{port}/nested.zip#package.2.zip", oracles[2])
 function test(path, oracle) {
     exports['test ' + path] = function (ASSERT, done) {
         path = path.replace("{port}", port);
-        var fs = PACKAGE_FS.get(path, FS, HTTP);
-        Q.when(fs, function (fs) {
-            var actuals = {
-                "list": fs.list(""),
-                "listTree": fs.listTree(""),
-                "read": fs.read("package.json", "r", "utf-8")
-            };
-            return eventuallyVerify(ASSERT, actuals, oracle);
+        var got = PACKAGE_FS.get(path, FS, HTTP);
+        Q.when(got, function (got) {
+            console.log(got.href);
+            var fs = Root(got.fs, got.path);
+            return Q.when(fs, function (fs) {
+                var actuals = {
+                    "list": fs.list(""),
+                    "listTree": fs.listTree(""),
+                    "read": fs.read("package.json", "r", "utf-8")
+                };
+                return eventuallyVerify(ASSERT, actuals, oracle);
+            });
         }).then(done, function (reason) {
             ASSERT.ok(false, reason);
             done();
