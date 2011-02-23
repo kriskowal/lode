@@ -8,4 +8,10 @@ define(function (require, exports, module) {
     console.log(require("baz"));
     console.log(require("qux"));
     console.log('test', a, require.main);
+
+    /*
+    var pkg = require("package");
+    console.log(pkg.resource("data/hello.txt").url());
+    */
+
 });

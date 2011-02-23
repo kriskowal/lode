@@ -8,19 +8,22 @@
     ],
     "mappings": {
         "foo": "mappings/foo",
-        "qux": {"archive": "mappings/qux.zip"}
+        "qux": {"archive": "mappings/qux.zip"},
+        "package": {"capability": "package"}
     },
     "scope": [
         {"capability": "console"},
         {"capability": "node@0.4.0"}
     ],
     "loaders": [
-        {"extension": ""},
-        {"extension": ".js"},
-        {"extension": ".coffee", "package": {
-            "npm": "coffee-script"
-        }}
+        {
+            "extension": ".coffee",
+            "package": {"system": "coffee-script"}
+        }
     ],
-    "registry": "http://npm",
+    "resources": [
+        "data",
+        "package.json"
+    ],
     "supportDefine": true
 }
