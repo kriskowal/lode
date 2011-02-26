@@ -102,9 +102,8 @@ test("http://localhost:{port}/nested.zip#package.2.zip", oracles[2])
 function test(path, oracle) {
     exports['test ' + path] = function (ASSERT, done) {
         path = path.replace("{port}", port);
-        var got = PACKAGE_FS.get(path, FS, HTTP);
+        var got = PACKAGE_FS.get(path, {"fs": FS, "http": HTTP});
         Q.when(got, function (got) {
-            console.log(got.href);
             var fs = Root(got.fs, got.path);
             return Q.when(fs, function (fs) {
                 var actuals = {
@@ -133,6 +132,138 @@ function eventuallyVerify(ASSERT, actuals, oracle) {
     return Q.shallow(each);
 }
 
+// path and href tests
+[
+    // file
+    {
+        "get": absolute,
+        "href": absolute,
+        "path": absolute
+    },
+    {
+        "get": relative,
+        "href": absolute,
+        "path": absolute
+    },
+    {
+        "get": absolute + "/package.1.zip",
+        "href": absolute + "/package.1.zip#/",
+        "path": "/"
+    },
+    {
+        "get": relative + "/package.1.zip",
+        "href": absolute + "/package.1.zip#/",
+        "path": "/"
+    },
+    {
+        "get": relative + "/packages.zip#package.1/1/2/3",
+        "href": absolute + "/packages.zip#/package.1/1/2/3",
+        "path": "/package.1/1/2/3"
+    },
+    {
+        "get": relative + "/packages.zip#/package.1/1/2/3",
+        "href": absolute + "/packages.zip#/package.1/1/2/3",
+        "path": "/package.1/1/2/3"
+    },
+    // http
+    {
+        "get": "http://localhost:{port}/packages.zip",
+        "href": "http://localhost:{port}/packages.zip#/",
+        "path": "/"
+    },
+    {
+        "get": "http://localhost:{port}/packages.zip#",
+        "href": "http://localhost:{port}/packages.zip#/",
+        "path": "/"
+    },
+    // packages package 1
+    {
+        "get": "http://localhost:{port}/packages.zip#package.1",
+        "href": "http://localhost:{port}/packages.zip#/package.1",
+        "path": "/package.1"
+    },
+    {
+        "get": "http://localhost:{port}/packages.zip#package.1/",
+        "href": "http://localhost:{port}/packages.zip#/package.1",
+        "path": "/package.1"
+    },
+    {
+        "get": "http://localhost:{port}/packages.zip#package.1/1/2/3",
+        "href": "http://localhost:{port}/packages.zip#/package.1/1/2/3",
+        "path": "/package.1/1/2/3"
+    },
+    // nested package 1
+    {
+        "get": "http://localhost:{port}/nested.zip#package.1.zip",
+        "href": "http://localhost:{port}/nested.zip#/package.1.zip#/",
+        "path": "/"
+    },
+    {
+        "get": "http://localhost:{port}/nested.zip#package.1.zip#",
+        "href": "http://localhost:{port}/nested.zip#/package.1.zip#/",
+        "path": "/"
+    },
+    {
+        "get": "http://localhost:{port}/nested.zip#package.1.zip#/",
+        "href": "http://localhost:{port}/nested.zip#/package.1.zip#/",
+        "path": "/"
+    },
+].forEach(function (test) {
+    exports['test path/href ' + test.get] = function (ASSERT, done) {
+        var path = test.get.replace(/{port}/, port);
+        var got = PACKAGE_FS.get(path, {"fs": FS, "http": HTTP});
+        Q.when(got, function (got) {
+            ASSERT.equal(got.href, test.href.replace(/{port}/, port), 'href');
+            ASSERT.equal(got.path, test.path, 'path');
+        })
+        .then(done, function (reason) {
+            ASSERT.ok(false, JSON.stringify(reason));
+            done();
+        });
+    };
+});
+
+[
+    {
+        "p1": absolute,
+        "p2": absolute,
+        "href": absolute,
+        "path": absolute
+    },
+    {
+        "p1": "http://localhost:{port}/packages.zip",
+        "p2": "http://localhost:{port}/packages.zip",
+        "href": "http://localhost:{port}/packages.zip#/",
+        "path": "/"
+    },
+    {
+        "p1": "http://localhost:{port}/nested.zip#package.1.zip#",
+        "p2": "http://localhost:{port}/nested.zip",
+        "href": "http://localhost:{port}/nested.zip#/",
+        "path": "/"
+    },
+].forEach(function (test) {
+    exports[
+        'test path/href ' +
+        JSON.stringify(test.p1) + ' ' +
+        JSON.stringify(test.p2)
+    ] = function (ASSERT, done) {
+        var p1 = test.p1.replace(/{port}/, port);
+        var p2 = test.p2.replace(/{port}/, port);
+        var g1 = PACKAGE_FS.get(p1, {"fs": FS, "http": HTTP});
+        Q.when(g1, function (g1) {
+            var g2 = PACKAGE_FS.get(p2, g1);
+            return Q.when(g2, function (g2) {
+                ASSERT.equal(g2.href, test.href.replace(/{port}/, port), 'href');
+                ASSERT.equal(g2.path, test.path, 'path');
+            })
+        })
+        .then(done, function (reason) {
+            ASSERT.ok(false, JSON.stringify(reason));
+            done();
+        });
+    };
+});
 
 exports['test teardown'] = function (ASSERT) {
     Q.post(listening, 'stop');
