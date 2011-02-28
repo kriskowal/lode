@@ -1,113 +1,260 @@
 {
-    "/Users/kris/js/lode/test": {
-        "path": "/Users/kris/js/lode/test",
-        "ids": [
-            ""
-        ],
-        "linkage": {
-            "bar": {
-                "package": "/Users/kris/js/lode/test/includes/baz",
-                "id": "bar"
+    "main": "/Users/kris/js/lode/test",
+    "packages": {
+        "system:coffee-script": {
+            "href": "system:coffee-script",
+            "ids": [
+                ""
+            ],
+            "lib": {
+                "": {
+                    "system": "coffee-script"
+                }
             },
-            "baz": {
-                "package": "/Users/kris/js/lode/test/includes/baz",
-                "id": "baz"
+            "resources": {}
+        },
+        "capability:package": {
+            "href": "capability:package",
+            "ids": [
+                ""
+            ],
+            "lib": {
+                "": {
+                    "capability": "package"
+                }
             },
-            "": {
-                "path": "/Users/kris/js/lode/test/main.js",
-                "content": "define(function (require, exports, module) {\n    var a = require(\"./a\")\n    exports.b = 10;\n    console.log(module);\n    console.log(require(\"foo\"));\n    console.log(require(\"foo/bar\"));\n    console.log(require(\"bar\"));\n    console.log(require(\"baz\"));\n    console.log(require(\"qux\"));\n    console.log('test', a, require.main);\n});\n",
-                "loader": {}
+            "resources": {}
+        },
+        "/Users/kris/js/lode/test": {
+            "href": "/Users/kris/js/lode/test",
+            "path": "/Users/kris/js/lode/test",
+            "config": {
+                "lode": true,
+                "main": "main.js",
+                "public": [
+                    ""
+                ],
+                "includes": [
+                    "includes/bar",
+                    "includes/baz"
+                ],
+                "mappings": {
+                    "foo": "mappings/foo",
+                    "qux": {
+                        "archive": "mappings/qux.zip",
+                        "href": "mappings/qux.zip"
+                    },
+                    "package": {
+                        "capability": "package"
+                    }
+                },
+                "scope": [
+                    {
+                        "capability": "console"
+                    },
+                    {
+                        "capability": "node@0.4.0"
+                    }
+                ],
+                "loaders": [
+                    {
+                        "extension": ".coffee",
+                        "compiler": {
+                            "system": "coffee-script"
+                        }
+                    }
+                ],
+                "resources": [
+                    "data",
+                    "package.json"
+                ],
+                "supportDefine": true
             },
-            "a": {
-                "path": "/Users/kris/js/lode/test/lib/a.js",
-                "content": "module.exports = 10;\n",
-                "loader": {}
+            "ids": [
+                ""
+            ],
+            "lib": {
+                "bar": {
+                    "href": "/Users/kris/js/lode/test/includes/bar/bar.js",
+                    "path": "bar.js",
+                    "packagePath": "/Users/kris/js/lode/test/includes/bar/lib/bar.js",
+                    "id": "bar",
+                    "package": "/Users/kris/js/lode/test/includes/bar"
+                },
+                "baz": {
+                    "href": "/Users/kris/js/lode/test/includes/baz/baz.js",
+                    "path": "baz.js",
+                    "packagePath": "/Users/kris/js/lode/test/includes/baz/lib/baz.js",
+                    "id": "baz",
+                    "package": "/Users/kris/js/lode/test/includes/baz"
+                },
+                "": {
+                    "href": "/Users/kris/js/lode/test/Users/kris/js/lode/test/main.js",
+                    "path": "main.js",
+                    "packagePath": "/Users/kris/js/lode/test/main.js",
+                    "id": "",
+                    "extension": ".js"
+                },
+                "a": {
+                    "href": "/Users/kris/js/lode/test/a.coffee",
+                    "path": "a.coffee",
+                    "packagePath": "/Users/kris/js/lode/test/lib/a.coffee",
+                    "id": "a",
+                    "package": "/Users/kris/js/lode/test",
+                    "loader": {
+                        "extension": ".coffee",
+                        "compiler": "system:coffee-script"
+                    }
+                },
+                "b": {
+                    "href": "/Users/kris/js/lode/test/b.js",
+                    "path": "b.js",
+                    "packagePath": "/Users/kris/js/lode/test/lib/b.js",
+                    "id": "b",
+                    "package": "/Users/kris/js/lode/test"
+                },
+                "c": {
+                    "href": "/Users/kris/js/lode/test/c.js",
+                    "path": "c.js",
+                    "packagePath": "/Users/kris/js/lode/test/lib/c.js",
+                    "id": "c",
+                    "package": "/Users/kris/js/lode/test"
+                },
+                "e/1": {
+                    "href": "/Users/kris/js/lode/test/e/1.js",
+                    "path": "e/1.js",
+                    "packagePath": "/Users/kris/js/lode/test/lib/e/1.js",
+                    "id": "e/1",
+                    "package": "/Users/kris/js/lode/test"
+                },
+                "d": {
+                    "href": "/Users/kris/js/lode/test/d.js",
+                    "path": "d.js",
+                    "packagePath": "/Users/kris/js/lode/test/engines/lode/lib/d.js",
+                    "id": "d",
+                    "package": "/Users/kris/js/lode/test"
+                },
+                "foo": {
+                    "external": true,
+                    "package": "/Users/kris/js/lode/test/mappings/foo",
+                    "id": ""
+                },
+                "foo/bar": {
+                    "external": true,
+                    "package": "/Users/kris/js/lode/test/mappings/foo",
+                    "id": "bar"
+                },
+                "qux": {
+                    "external": true,
+                    "package": "/Users/kris/js/lode/test/mappings/qux.zip#/",
+                    "id": ""
+                },
+                "package": {
+                    "external": true,
+                    "package": "capability:package",
+                    "id": ""
+                }
             },
-            "b": {
-                "path": "/Users/kris/js/lode/test/lib/b.js",
-                "content": "",
-                "loader": {}
+            "resources": {
+                "data/hello.txt": {
+                    "path": "hello.txt"
+                },
+                "package.json": {
+                    "path": "package.json"
+                }
             },
-            "c": {
-                "path": "/Users/kris/js/lode/test/lib/c.js",
-                "content": "",
-                "loader": {}
+            "scope": [
+                "capability:console",
+                "capability:node@0.4.0"
+            ]
+        },
+        "capability:console": {
+            "href": "capability:console",
+            "ids": [
+                ""
+            ],
+            "lib": {
+                "": {
+                    "capability": "console"
+                }
             },
-            "foo": {
-                "package": "/Users/kris/js/lode/test/mappings/foo",
-                "id": ""
+            "resources": {}
+        },
+        "capability:node@0.4.0": {
+            "href": "capability:node@0.4.0",
+            "ids": [
+                ""
+            ],
+            "lib": {
+                "": {
+                    "capability": "node@0.4.0"
+                }
             },
-            "foo/bar": {
-                "package": "/Users/kris/js/lode/test/mappings/foo",
-                "id": "bar"
+            "resources": {}
+        },
+        "/Users/kris/js/lode/test/mappings/qux.zip#/": {
+            "href": "/Users/kris/js/lode/test/mappings/qux.zip#/",
+            "path": "/",
+            "config": {
+                "lode": true,
+                "main": "qux.js",
+                "mappings": {},
+                "includes": [],
+                "resources": [],
+                "scope": []
             },
-            "qux": {
-                "package": "",
-                "id": ""
-            }
+            "ids": [
+                ""
+            ],
+            "lib": {
+                "": {
+                    "href": "/Users/kris/js/lode/test/mappings/qux.zip#/qux.js",
+                    "path": "qux.js",
+                    "packagePath": "/qux.js",
+                    "id": "",
+                    "extension": ".js"
+                }
+            },
+            "resources": {},
+            "scope": []
+        },
+        "/Users/kris/js/lode/test/mappings/foo": {
+            "href": "/Users/kris/js/lode/test/mappings/foo",
+            "path": "/Users/kris/js/lode/test/mappings/foo",
+            "config": {
+                "lode": true,
+                "main": "foo.js",
+                "mappings": {},
+                "includes": [],
+                "resources": [],
+                "scope": []
+            },
+            "ids": [
+                "",
+                "bar"
+            ],
+            "lib": {
+                "": {
+                    "href": "/Users/kris/js/lode/test/mappings/foo/Users/kris/js/lode/test/mappings/foo/foo.js",
+                    "path": "foo.js",
+                    "packagePath": "/Users/kris/js/lode/test/mappings/foo/foo.js",
+                    "id": "",
+                    "extension": ".js"
+                },
+                "bar": {
+                    "href": "/Users/kris/js/lode/test/mappings/foo/bar.js",
+                    "path": "bar.js",
+                    "packagePath": "/Users/kris/js/lode/test/mappings/foo/lib/bar.js",
+                    "id": "bar",
+                    "package": "/Users/kris/js/lode/test/mappings/foo"
+                }
+            },
+            "resources": {},
+            "scope": []
         }
     },
-    "/Users/kris/js/lode/test/mappings/foo": {
-        "path": "/Users/kris/js/lode/test/mappings/foo",
-        "ids": [
-            "",
-            "bar"
-        ],
-        "linkage": {
-            "": {
-                "path": "/Users/kris/js/lode/test/mappings/foo/foo.js",
-                "content": "return \"foo\";\n",
-                "loader": {}
-            },
-            "bar": {
-                "path": "/Users/kris/js/lode/test/mappings/foo/lib/bar.js",
-                "content": "return 'bar';\n",
-                "loader": {}
-            }
-        }
-    },
-    "/Users/kris/js/lode/test/mappings/qux.zip": {
-        "path": "",
-        "ids": [
-            ""
-        ],
-        "linkage": {
-            "": {
-                "path": "qux.js",
-                "content": "return \"qux\";\n",
-                "loader": {}
-            }
-        }
-    },
-    "/Users/kris/js/lode/test/includes/bar": {
-        "path": "/Users/kris/js/lode/test/includes/bar",
-        "ids": [
-            "bar"
-        ],
-        "linkage": {
-            "bar": {
-                "path": "/Users/kris/js/lode/test/includes/bar/lib/bar.js",
-                "content": "return \"bar\";\n",
-                "loader": {}
-            }
-        }
-    },
-    "/Users/kris/js/lode/test/includes/baz": {
-        "path": "/Users/kris/js/lode/test/includes/baz",
-        "ids": [
-            "bar",
-            "baz"
-        ],
-        "linkage": {
-            "bar": {
-                "package": "/Users/kris/js/lode/test/includes/bar",
-                "id": "bar"
-            },
-            "baz": {
-                "path": "/Users/kris/js/lode/test/includes/baz/lib/baz.js",
-                "content": "define(\"baz\", function (require) {\n    require(\"bar\");\n    return \"baz\";\n});\n",
-                "loader": {}
-            }
-        }
-    }
+    "metaPackages": {},
+    "warnings": [
+        "Multiple candidates for module \"a\" in package \"/Users/kris/js/lode/test\" including [\".coffee\",\".js\",\".x\"]. Chose \"a.coffee\"."
+    ]
 }

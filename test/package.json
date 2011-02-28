@@ -18,7 +18,7 @@
     "loaders": [
         {
             "extension": ".coffee",
-            "package": {"system": "coffee-script"}
+            "compiler": {"system": "coffee-script"}
         }
     ],
     "resources": [
