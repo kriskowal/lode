@@ -100,8 +100,15 @@ Lode Packages
 -------------
 
 A Lode package supports multiple kinds of inter-package
-dependency and can conditionally include module roots within
-the package depending on several initialization options.
+dependency and each package can be composed from several
+layered directory trees ("roots") depending on
+several conditions, like whether the package is being used
+in development or production, and whether the package is
+being used in a web page, browser extension, or server-side
+JavaScript embedding.
+
+
+### Composition
 
 A package can contain several roots.  Which roots are
 incorporated depends on the loader options.  For example, a
@@ -144,21 +151,12 @@ public name spaces, they are more tightly coupled than
 mappings and should be developed in tighter coordination.
 
 Within Lode packages, the `require.paths` variable specified
-as optional by the CommonJS/Packages/1.0 specification, is
-undefined.  The set of modules available within a package
+as optional by the CommonJS/Packages/1.0 specification, does
+not exist.  The set of modules available within a package
 cannot be manipulated at run-time.
 
-Presently, the `package.json` of a Lode package must
-explicitly note that it is a Lode package.
 
-    {
-        "lode": true
-    }
-
-If a package is not merely a Lode package, but has
-configuration properties for other systems, the "lode"
-property may be an object that shallowly overrides
-individual properties of the configuration.
+### Dependencies
 
 A package's "main" module may be specified with the `"main"`
 property in `package.json`, as a path relative to the
@@ -173,31 +171,152 @@ properties.  `"includes"` must be an array of dependencies
 and `"mappings"` must be an object that maps module subtrees
 to dependencies.
 
-For the time being, dependencies are URL's relative to the
-package root, either to directories or to zip files.  If the
-package itself is inside a zip file, the contents of the zip
-file are treated as the local file system in that package.
-"file:", "http:", and "https:" protocols are fully
-supported.
-
     {
         "main": "foo.js",
-        "mappings": {
-            "bar": "mappings/bar"
-        },
         "includes": [
-            "includes/baz"
+            "https://example.com/baz.zip"
+        ],
+        "mappings": {
+            "bar": "mappings/bar",
+            "resources": {"capability": "resources"}
+        }
+    }
+
+There are presently three styles of dependency:
+inter-package dependency, capability dependency, and system
+dependency.  All dependencies can be expressed with an
+object with various properties, but inter-package
+dependencies can be simple URL strings.
+
+
+#### Inter-package Dependency
+
+A package dependency has an `href` URL property that refers
+to another package by its URL relative to the current
+package.  Since URL's are a strict super-set of Unix paths,
+a relative path will suffice for the `href` if the other
+package is on the same file system (including file systems
+inside archives).  Dependency packages can be simple
+directories if they are on the same file system, or can be
+zip files either on the same file system or on the web.  If
+a package is on the web, both "http" and "https" (for SSL)
+protocols are supported.
+
+A package dependency may also have a `hash` property with
+the first 40 hexidecimal characters of the SHA-256 hash of
+the package's modules and resources, digested in sorted
+order respectively from their byte buffers.  These hashes
+are intended to be eventually used to verify that the
+version of a dependency matches the expected version, as a
+cache key so packages can be retrieved from a cache of
+compiled packages, and as a URL for versioned packages
+hosted from CDN's.
+
+Package dependencies will also eventually support an
+additional property that will permit Lode to alternately
+fetch a package from the web or use a local copy in a
+specified relative location.  This will be useful for
+development and publishing new packages.
+
+
+#### Capability Dependency
+
+A capability dependency has a `capability` property with the
+name of a capability provided by the host system.
+Capabilities must be explicitly injected by the container to
+give a package permission to use authority-bearing API's
+like access to a file-system or browser chrome.
+
+`/!\` Capabilities are not yet provided or enforced.
+
+
+#### System Dependency
+
+A system dependency has a `system` property with the name of
+a module provided by the host system.  System dependencies
+are a stop-gap that allows Lode to use code that has been
+installed with other systems until it is able to load most
+packages on its own, and until all packages that have to be
+installed on the local system can be exposed to packages
+through capabilities instead.
+
+
+### Alternate Languages
+
+A package can specify another pakcage as the provider of a
+compiler for alternate source-code languages.  The compiler
+package must provide a main module with a `compile(text)`
+function that returns JavaScript.  Compilers are prioritized
+and selected based off of the existence of a file with a
+matching extension.
+
+    {
+        "languages": [
+            {
+                "extension": ".coffee",
+                "compiler": "languages/coffee-script"
+            }
         ]
     }
 
-Other styles of dependency will eventually be supported,
-like dependency on capabilities provided by the system,
-for which the runner or installer must ask permission, and
-dependencies that provide levels of indirection between the
-dependee and the URL of the dependency, like dependencies
-based on a package catalog or registry on the web, and
-hashes or version numbers.  Lode will also support various
-styles of caching and installation of remote packages.
+If a single package root provides multiple files for which
+there are matching language extensions, the package linkage
+will contain a warning in its `warnings` property indicating
+that there were multiple candidates for the given module
+identifier, and which one was elected based on the priority
+order of the languages.
+
+Since a compiler can produce JavaScript before a working-set
+executes and is not necessary during the execution of a
+package, compilers are not incorporated into the linkage of
+a package.  This means that compiler packages are not
+included in package bundles or package bundle dependencies,
+so they don't need to be loaded by a browser.
+
+In the future, `interpreter` may be provided as an
+alternative to `compiler`, in which case a package will be
+bundled with the source code for the module as a resource
+and the interpreter package will be included in the
+working-set as a dependency, so it can be executed either on
+the client or the server.
+
+
+### Configuration
+
+Presently, the `package.json` of a Lode package must
+explicitly note that it is a Lode package.
+
+    {
+        "lode": true
+    }
+
+If a package is intended to be used by other
+package-management systems; like NPM, Teleport, and Jetpack;
+Lode supports the CommonJS/Packages `overlays` property,
+where package-system-specific properties can be provided.
+
+    {
+        "overlays": {
+            "lode": {
+            },
+            "teleport": {
+            }
+        }
+    }
+
+If a package provides an overlay for Lode, the package does
+not need a root-level `lode` property; Lode infers it.
+
+`/!\` NPM 0.3 dropped support for the `overlays` property,
+which means that, if a package is intended to be used with
+NPM, it must provide its configuration at the root and all
+other package management systems must use the `overlays`
+property to override NPM-specific properties. This also
+means that, should any other package managers drop support
+for `overlays`, they will be mutually incompatible.
+
+
+#### Configuring Composition
 
 By default, all modules in a package are publically linked.
 The set of public module identifiers can be restricted by
@@ -207,6 +326,9 @@ in the package configuration.
     {
         "public": ["foo", "bar", "baz"]
     }
+
+
+#### Compatibility Switches
 
 A package may opt-in to support the RequireJS `define`
 boilerplate in modules.
@@ -233,6 +355,7 @@ factory to throw an error.
     {
         "requireDefine": true
     }
+
 
 
 Lode Modules
@@ -286,101 +409,6 @@ variables do not appear in Lode packages.  Also, Lode does
 not respect the Node convention that a `foo/index.js` file
 gets linked to the module identifier `foo` in place of
 `foo.js`.
-
-
-API
----
-
-The "lode" module contains the following API. Promises
-returned by this API conform to CommonJS/Promises/A,B,D, so
-they're interoperable with promises from many other
-libraries.
-
-
-## `loadPackage(url, options)`
-
-returns a promise for the package at the given URL.  The URL
-must refer to a directory containing a `package.json`.  The
-returned package object has `identify(path)` and
-`require(id)` methods.
-
-## `loadPackageContaining(path, options)`
-
-returns a promise for the package containing the script at
-the given path.  A subsequent call to `package.identify` can
-ascertain the corresponding module identifier of the script.
-If the script is not inside a package, the returned
-pseudo-package handles the script as a normal Node module.
-
-## `linkPackage(path, options)`
-
-returns a promise for the full linkage tree of the given
-package.  A linkage tree contains all of the involved
-packages, identified by their canonical paths, mapped to the
-corresponding package data.
-
-Each package descriptor has `path`, `ids`, and `linkage`
-properties.  The `path` the unique path of the package.  The
-`ids` are all of the public module identifiers, suitable for
-linking to other packages.  The `linkage` is a mapping from
-top-level module identifiers to module data.
-
-Each module descriptor is either for an internal module or
-an external module.
-
-If the module is linked to another package, the descriptor
-will have `package` and `id` properties for the
-corresponding module.  The `package` property is the unique
-path to the package, suitable for indexing off the root
-object.
-
-If the module is provided by the containing package, the
-descriptor will have `path`, `content`, and `loader`
-properties.  The `path` is the canonical path of the file
-from which the module comes.  `content` is the text of the
-module, regardless of the language it was written in.  The
-`loader` is an object that can either compile the content to
-a factory, translate it to JavaScript, or refer to a package
-with a suitabe interpreter for either the client or
-server-side.
-
-
-## `package.require(id)`
-
-Returns the exports of the corresponding module in the
-package's name-space.
-
-## `package.require.exec(id, scope_opt)`
-
-Lode packages provide an exec method that permits a record
-containing additional free variables to be injected into the
-main module of the package.  `exec` creates a new instance
-of the package which does not share state with other `exec`
-calls.
-
-## `package.identify(path)`
-
-Returns a promise for the module identifier corresponding to
-the given path, suitable for passing to `require` on this
-package.
-
-## `package.ids`
-
-An array of the module identifiers that this package
-exposes.  This is used internally for statically linking the
-package in another package.
-
-## `options.engines`
-
-An optional array of engine names.  The corresponding engine
-roots (directories like `package/engine/browser`) will be
-incorporated into the package, superceding any files in the
-main package root.
-
-## `options.debug`
-
-If true, the given package will incorporate `debug` roots
-from any other root.
 
 
 Glossary
@@ -617,11 +645,6 @@ intends.
   the package at that path so it may be edited in place.
   Without the "path", `lode` would have the option of
   downloading it and running it in memory.
-- `lode` might opt to use a hashing algorithm to verify the
-  signature of a package if the hash is provided.  This is
-  particularly useful for verifying that the version that is
-  online corresponds to the downloaded version with which
-  the package has been tested.
 - Alternately, levels of indirection between the dependency
   and the archival download URL might be introduced using a
   catalog or registry URL, a package name, and a version,
@@ -634,16 +657,6 @@ intends.
 
 It will be possible to use `lode` to build a stand-alone
 executable for a package.
-
-It will be possible to specify in `package.json` that
-particular file extensions in that package should be loaded
-or compiled to JavaScript with an alternate loader, provided
-by a given package.  If the modules in question are being
-delivered to a browser, it will be necessary for the loader
-to either compile the language to JavaScript on the
-server-side or provide an interpreter to run the code on the
-client side.  If the interpreter is needed, Lode will bundle
-the loader package for use on the client.
 
 It will be possible for packages to be hosted or bundled for
 use in web browsers, for either development or deployment.

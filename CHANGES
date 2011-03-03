@@ -1,4 +1,8 @@
 
+Next
+ - The "loaders" property in package.json has been changed
+   to "languages".
+
 0.0.4
  - Can now compute hashes of packages.
  - Can now execute packages over file/http/https in

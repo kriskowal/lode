@@ -11,11 +11,7 @@
         "qux": {"archive": "mappings/qux.zip"},
         "package": {"capability": "package"}
     },
-    "scope": [
-        {"capability": "console"},
-        {"capability": "node@0.4.0"}
-    ],
-    "loaders": [
+    "languages": [
         {
             "extension": ".coffee",
             "compiler": {"system": "coffee-script"}
