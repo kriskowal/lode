@@ -1,7 +1,7 @@
 {
     "name": "lode",
     "description": "An asynchronous package-aware module loader.",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "homepage": "http://github.com/kriskowal/lode/",
     "author": "Kris Kowal <kris@cixar.com> (http://github.com/kriskowal/)",
     "contributors": [
@@ -18,8 +18,8 @@
         }
     ],
     "bin": {
-        "lode": "./lode.js",
-        "lodown": "./lodown.js"
+        "lode": "./bin/lode",
+        "lodown": "./bin/lodown"
     },
     "repository": {
         "type": "git",
@@ -29,7 +29,8 @@
         "q": ">=0.2.8",
         "q-fs": ">=0.0.16",
         "q-http": ">=0.1.0",
-        "zip": ">=0.0.1"
+        "zip": ">=0.0.1",
+        "uglify-js": ">=0.0.1"
     },
     "engines": {
         "node": ">=0.2.0"

@@ -173,11 +173,12 @@ properties.  `"includes"` must be an array of dependencies
 and `"mappings"` must be an object that maps module subtrees
 to dependencies.
 
-For the time being, dependencies are paths relative to the
-package root.  These path properties will probably be
-tolerated indefinitely, but eventually a record that
-provides various styles of configuration information for the
-dependency will be accepted in-place.
+For the time being, dependencies are URL's relative to the
+package root, either to directories or to zip files.  If the
+package itself is inside a zip file, the contents of the zip
+file are treated as the local file system in that package.
+"file:", "http:", and "https:" protocols are fully
+supported.
 
     {
         "main": "foo.js",
@@ -188,6 +189,15 @@ dependency will be accepted in-place.
             "includes/baz"
         ]
     }
+
+Other styles of dependency will eventually be supported,
+like dependency on capabilities provided by the system,
+for which the runner or installer must ask permission, and
+dependencies that provide levels of indirection between the
+dependee and the URL of the dependency, like dependencies
+based on a package catalog or registry on the web, and
+hashes or version numbers.  Lode will also support various
+styles of caching and installation of remote packages.
 
 By default, all modules in a package are publically linked.
 The set of public module identifiers can be restricted by
@@ -287,10 +297,10 @@ they're interoperable with promises from many other
 libraries.
 
 
-## `loadPackage(path, options)`
+## `loadPackage(url, options)`
 
-returns a promise for the package at the given path.  The
-path must be a directory containing a `package.json`.  The
+returns a promise for the package at the given URL.  The URL
+must refer to a directory containing a `package.json`.  The
 returned package object has `identify(path)` and
 `require(id)` methods.
 
@@ -329,15 +339,10 @@ descriptor will have `path`, `content`, and `loader`
 properties.  The `path` is the canonical path of the file
 from which the module comes.  `content` is the text of the
 module, regardless of the language it was written in.  The
-`loader` is an object that can either `compile` the content
-to a factory, `translate` it to JavaScript, or refer to a
-package with a suitabe interpreter for either the client or
+`loader` is an object that can either compile the content to
+a factory, translate it to JavaScript, or refer to a package
+with a suitabe interpreter for either the client or
 server-side.
-
-Presently, the only loader available is a JavaScript loader
-that handles the `""` and `".js"` extensions of modules and
-can only `compile` modules to factories.  Loaders will
-eventually be configurable per package.
 
 
 ## `package.require(id)`

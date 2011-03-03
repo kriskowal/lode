@@ -1,4 +1,14 @@
 
+0.0.4
+ - Can now compute hashes of packages.
+ - Can now execute packages over file/http/https in
+   directories or zip archives.
+ - Can now compile alternate languages to JavaScript,
+   sharing common package information but without poluting
+   the static linkage information.
+ - Added the SES ES5-lab code from the Google Caja project
+   so packages can elect to operate in a secure context.
+
 0.0.2
- - initial support for zip archives
+ - Initial support for zip archives
 

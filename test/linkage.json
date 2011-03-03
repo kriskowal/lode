@@ -1,18 +1,9 @@
 {
     "main": "/Users/kris/js/lode/test",
+    "capabilities": [
+        "package"
+    ],
     "packages": {
-        "system:coffee-script": {
-            "href": "system:coffee-script",
-            "ids": [
-                ""
-            ],
-            "lib": {
-                "": {
-                    "system": "coffee-script"
-                }
-            },
-            "resources": {}
-        },
         "capability:package": {
             "href": "capability:package",
             "ids": [
@@ -23,7 +14,8 @@
                     "capability": "package"
                 }
             },
-            "resources": {}
+            "resources": {},
+            "hash": "eb045d78d273107348b0300c01d29b7552d622ab"
         },
         "/Users/kris/js/lode/test": {
             "href": "/Users/kris/js/lode/test",
@@ -103,7 +95,9 @@
                     "package": "/Users/kris/js/lode/test",
                     "loader": {
                         "extension": ".coffee",
-                        "compiler": "system:coffee-script"
+                        "compiler": {
+                            "system": "coffee-script"
+                        }
                     }
                 },
                 "b": {
@@ -163,34 +157,7 @@
                     "path": "package.json"
                 }
             },
-            "scope": [
-                "capability:console",
-                "capability:node@0.4.0"
-            ]
-        },
-        "capability:console": {
-            "href": "capability:console",
-            "ids": [
-                ""
-            ],
-            "lib": {
-                "": {
-                    "capability": "console"
-                }
-            },
-            "resources": {}
-        },
-        "capability:node@0.4.0": {
-            "href": "capability:node@0.4.0",
-            "ids": [
-                ""
-            ],
-            "lib": {
-                "": {
-                    "capability": "node@0.4.0"
-                }
-            },
-            "resources": {}
+            "hash": "c890497a77ee386d71b359101810ba3395119e2b"
         },
         "/Users/kris/js/lode/test/mappings/qux.zip#/": {
             "href": "/Users/kris/js/lode/test/mappings/qux.zip#/",
@@ -200,8 +167,7 @@
                 "main": "qux.js",
                 "mappings": {},
                 "includes": [],
-                "resources": [],
-                "scope": []
+                "resources": []
             },
             "ids": [
                 ""
@@ -216,7 +182,7 @@
                 }
             },
             "resources": {},
-            "scope": []
+            "hash": "3e78b65965f979759d6db4ea95849b5f045c39e2"
         },
         "/Users/kris/js/lode/test/mappings/foo": {
             "href": "/Users/kris/js/lode/test/mappings/foo",
@@ -226,8 +192,7 @@
                 "main": "foo.js",
                 "mappings": {},
                 "includes": [],
-                "resources": [],
-                "scope": []
+                "resources": []
             },
             "ids": [
                 "",
@@ -250,7 +215,7 @@
                 }
             },
             "resources": {},
-            "scope": []
+            "hash": "3767bd408ed70db25b9d7b8c62e5279486ed4351"
         }
     },
     "metaPackages": {},
