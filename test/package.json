@@ -11,12 +11,9 @@
         "qux": {"archive": "mappings/qux.zip"},
         "package": {"capability": "package"}
     },
-    "languages": [
-        {
-            "extension": ".coffee",
-            "compiler": {"system": "coffee-script"}
-        }
-    ],
+    "languages": {
+        ".coffee": {"system": "coffee-script"}
+    },
     "resources": [
         "data",
         "package.json"

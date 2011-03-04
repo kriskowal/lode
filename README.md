@@ -243,12 +243,26 @@ through capabilities instead.
 
 ### Alternate Languages
 
-A package can specify another pakcage as the provider of a
+A package can specify another package as the provider of a
 compiler for alternate source-code languages.  The compiler
 package must provide a main module with a `compile(text)`
 function that returns JavaScript.  Compilers are prioritized
 and selected based off of the existence of a file with a
 matching extension.
+
+    {
+        "languages": {
+            ".coffee": "languages/coffee-script"
+        }
+    }
+
+This gets translated internally into an array of language
+records, each with an `extension` property and another
+property describing how to handle the language, in this
+case, using the bundled CoffeeScript compiler package.  The
+default handler, if none is provided, is the standard
+JavaScript module loader.  It may eventually be possible to
+bundle a package with an interpreter dependency.
 
     {
         "languages": [

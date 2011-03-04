@@ -1,7 +1,8 @@
 
 Next
  - The "loaders" property in package.json has been changed
-   to "languages".
+   to "languages". Furthermore, it can now be an object
+   mapping extensions to compiler meta-dependencies.
 
 0.0.4
  - Can now compute hashes of packages.
