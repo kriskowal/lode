@@ -25,13 +25,6 @@
         "type": "git",
         "url": "http://github.com/kriskowal/lode.git"
     },
-    "dependencies": {
-        "q": ">=0.2.9",
-        "q-fs": ">=0.0.16",
-        "q-http": ">=0.1.0",
-        "zip": ">=0.0.1",
-        "uglify-js": ">=0.0.1"
-    },
     "engines": {
         "node": ">=0.2.0"
     }
