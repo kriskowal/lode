@@ -1,0 +1,6 @@
+{
+    "main": "main.js",
+    "mappings": {
+        "node": {"capability": "node@0.4"}
+    }
+}

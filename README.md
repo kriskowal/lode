@@ -56,6 +56,184 @@ packages.  It is designed to eventually be able to
 assimilate other package formats.
 
 
+Guide
+-----
+
+A package is a directory, optionally archived in zip format,
+that contains scripts, resources, and configuration.
+Packages can be linked to other packages through its
+configuration.
+
+Your first package, `foo`, will start with a CommonJS
+"main" module.  You'll need to create this file, and note
+that it is your package's main module in the package
+configuration.
+
+#### `foo/main.js`:
+
+    console.log("Hello, World!");
+
+#### `foo/package.json`
+
+    {"main": "main.js"}
+
+Now you can execute `main.js` with Lode.
+
+    $ lode foo/main.js
+    Hello, World!
+
+Your package can contain other modules.  These modules must
+be in the `lib` directory of the package root.  Lode
+discovers and statically links all of the modules in your
+package's `lib` directory so that they can be required
+without blocking IO.  Add a `foo` library to your package by
+creating a `foo/lib/foo.js` module.
+
+#### `foo/lib/foo.js`
+
+    console.log("Hello from Foo!");
+
+Then revise your `main.js` to `require` that module from the
+library.
+
+#### `foo/main.js`
+
+    require("foo");
+
+And run Lode again.
+
+    $ lode foo
+    Hello from Foo!
+
+So far, in this package, you can only `require("foo")` to
+get the exports of `foo/lib/foo.js`, and `require("")` to
+get the exports of the `foo/main.js` module.  The empty
+string is the module identifier for the main module in any
+package.
+
+In any package, you can only `require` the modules that are
+in that package or in the packages that your package depends
+upon.  Let's create another package, `bar`.
+
+#### `bar/package.json`
+
+    {"main": "main.js"}
+
+#### `bar/main.js`
+
+    exports.hello = function (who) {
+        console.log("Hello,", who + "!");
+    };
+
+This package provides a main module that can say, "Hello",
+to anyone.  Since we want to use this package in the foo
+package, we need to add a URL to `foo/package.json`.
+
+#### `foo/package.json`
+
+    {
+        "main": "main.js",
+        "mappings": {
+            "bar": "../bar"
+        }
+    }
+
+Now we can use `bar` in `foo`.
+
+#### `foo/main.js`
+
+    var BAR = require("bar");
+    BAR.hello("World");
+
+Then we can run `foo` again with Lode.
+
+    $ lode foo
+    Hello, World!
+
+We can also archive our packages and put them on the web.
+Let's put `bar` in a `.zip` file and put it in `foo`.
+
+    $ mkdir foo/mappings
+    $ find bar | xargs zip mappings/bar.zip
+
+Then we edit `foo/package.json` to use the zip file instead
+of the directory.
+
+#### `foo/package.json`
+
+    {
+        "main": "main.js",
+        "mappings": {
+            "bar": "mappings/bar.zip"
+        }
+    }
+
+We can then archive `foo.zip` and put it on the web, even
+on an `https://` SSL URL, and run it directly with Lode.
+
+    $ lode https://example.com/foo.zip
+    Hello, World!
+
+`/!\` Note that using SSL alone does not make it possible to
+run suspicious packages from arbitrary URL's.  It is also
+necessary to attenuate authority, rigidly isolate modules to
+their lexical scopes, prevent modules from eaves-dropping on
+globally provided constructors, and to verify the hash
+digest of the package in question to prevent a
+man-in-the-middle from usurping `example.com`'s DNS entry
+and providing an alternate package.  All of these
+requirements are in the scope of Lode's design, but none of
+them are yet implemented.
+
+Lode gives your `package.json` absolute control over what
+module identifiers mean in all the modules in your package.
+In the same sense that it is possible to trace all of the
+free variables in a lexically scoped module, it is possible
+to trace all module identifiers to `package.json`.  With
+other systems, your package would share its module
+identifier name-space with all other installed packages.
+The drawback to Lode's approach is that the `package.json`
+must be very explicit.  The advantage is that you can
+determine easily, through analysis of all package.json files
+for all of the packages linked in a working set, whether a
+package will be usable in a variety of environments.  If a
+package depends on Node's file system API, that must be
+noted in a `package.json`, thus we can easily determine that
+the package will not work in a browser.
+
+Let's implement Node's example "Hello, World!" server.
+
+#### `hello/main.js`
+
+    var HTTP = require('node/http');
+    HTTP.createServer(function (req, res) {
+        res.writeHead(200, {'Content-Type': 'text/plain'});
+        res.end('Hello World\n');
+    }).listen(8124, "127.0.0.1");
+    console.log('Server running at http://127.0.0.1:8124/');
+
+To make this possible, we will need to bring Node's API's
+into our package's module name space.  Instead of depending
+on another package by URL, we'll add a dependency to a
+capability of the running engine, in this case Node at
+version 0.4.
+
+#### `hello/package.json`
+
+    {
+        "main": "main.js",
+        "mappings": {
+            "node": {"capability": "node@0.4"}
+        }
+    }
+
+Now we can run the server:
+
+    $ lode hello
+    Server running at http://127.0.0.1:8124/
+    ^C
+
+
 The Experiment
 --------------
 
@@ -227,7 +405,34 @@ Capabilities must be explicitly injected by the container to
 give a package permission to use authority-bearing API's
 like access to a file-system or browser chrome.
 
-`/!\` Capabilities are not yet provided or enforced.
+Presently, the only capability that a package can request in
+Lode is access to Node's internal API's.  The `capability`
+property of the dependency must note that it requires the
+`node@0.4` API and add this as a mapping to package
+configuration.
+
+    {
+        "mappings": {
+            "node": {"capability": "node@0.4"}
+        }
+    }
+
+It is my intent to create more and finer-grain capabilities,
+and a user-interface for mediating capabilities for
+suspicious packages.
+
+Capabilities are not yet enforced, but you can get a summary
+of the capabilities that a package requires by reading the
+linkage information for that package.
+
+    $ lodown <url>
+    {
+        "href": ...,
+        "capabilities": [
+            "node@0.4"
+        ],
+        ...
+    }
 
 
 #### System Dependency
@@ -235,10 +440,20 @@ like access to a file-system or browser chrome.
 A system dependency has a `system` property with the name of
 a module provided by the host system.  System dependencies
 are a stop-gap that allows Lode to use code that has been
-installed with other systems until it is able to load most
-packages on its own, and until all packages that have to be
-installed on the local system can be exposed to packages
-through capabilities instead.
+installed into Node's `require.paths` with other systems
+until it is able to load most packages on its own, and until
+all packages that have to be installed on the local system
+can be exposed to packages through capabilities instead.
+
+
+    {
+        "mappings": {
+            "system": "coffee-script"
+        }
+    }
+
+Lode does not attempt to install system dependencies, so if
+they are not available, they will cause run-time errors.
 
 
 ### Alternate Languages
