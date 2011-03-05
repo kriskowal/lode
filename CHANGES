@@ -1,5 +1,5 @@
 
-Next
+0.0.5
  - Added support for "node@0.4" capability injection.
  - The "loaders" property in package.json has been changed
    to "languages". Furthermore, it can now be an object

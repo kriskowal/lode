@@ -1,7 +1,7 @@
 {
     "name": "lode",
     "description": "An asynchronous package-aware module loader.",
-    "version": "0.0.4",
+    "version": "0.0.5",
     "homepage": "http://github.com/kriskowal/lode/",
     "author": "Kris Kowal <kris@cixar.com> (http://github.com/kriskowal/)",
     "contributors": [
