@@ -32,11 +32,22 @@ Then read the test package to get an idea what to expect and:
 
 `lode` is an alternate executable that runs CommonJS modules
 in packages.  The packages of modules are asynchronously
-loaded and statically linked.  `lode` discovers the package
-that contains your main module and asynchronously prepares
-all of the modules in that package and all of the packages
-that that package depends on through declarations in each
-package's `package.json` descriptor.
+loaded (from files or the web) and statically linked.  `lode`
+discovers the package that contains your main module and
+asynchronously prepares all of the modules in that package
+and all of the packages that that package depends on through
+declarations in each package's `package.json` descriptor.
+
+You can look at the static linkage of any package, including
+NPM packages, by running `lodown`:
+
+    $ lodown test.zip
+    {
+        "main": ".../test.zip#/",
+        "capabilities": [...]
+        "packages": {...},
+        "warnings": [...]
+    }
 
 If a package conditionally depends on another package, if
 the information for a dependency must be computed at
@@ -52,8 +63,12 @@ packages that are explicitly declared in the `package.json`.
 This prevents missing dependencies from going unnoticed.
 
 `lode` supports a new package style, tentatively called Lode
-packages.  It is designed to eventually be able to
-assimilate other package formats.
+packages, supports CommonJS [Mappings/C][] (with the
+exception of the optional `"location"` properties) and can
+also run some NPM packages, particularly NPM packages that
+were built with the now-deprecated `"modules"` mapping.
+
+[Mappings/C]: http://wiki.commonjs.org/wiki/Packages/Mappings/C
 
 
 Guide
@@ -577,6 +592,19 @@ that object replaces the module's given exports object.
         return exports;
     });
 
+For example:
+
+    define(function (require) {
+        return {"a": 10, "b": 20};
+    });
+
+Or, the literal declaration notation:
+
+    define({
+        "a": 10,
+        "b": 20
+    });
+
 A package may opt-in to make the `define` wrapper mandatory,
 in which case failing to call define will cause a module
 factory to throw an error.
@@ -865,24 +893,16 @@ object that notes various kinds of information depending on
 the degree and kind of coupling that the package author
 intends.
 
-- For example, it will be possible for a package to denote
-  the location of an archive on the web from which the
-  dependency may be downloaded.
-- Alternately, a version control repository URL might be
-  provided so it can be downloaded for editing.  If a "path"
-  is also provided, `lode` will have the option of placing
-  the package at that path so it may be edited in place.
+- A version control repository URL might be provided so it
+  can be downloaded for editing.  If a "path" is also
+  provided, `lode` will have the option of placing the
+  package at that path so it may be edited in place.
   Without the "path", `lode` would have the option of
   downloading it and running it in memory.
 - Alternately, levels of indirection between the dependency
   and the archival download URL might be introduced using a
   catalog or registry URL, a package name, and a version,
   version range, version predicate, or semantic version.
-- Alternately, the package might elect to allow `lode` to
-  provide a suitable implementation of a specification or
-  embedding API version, using a URL.  This would permit the
-  engine to provide stubs for deprecated APIs in a separate
-  container than its clean, stable API.
 
 It will be possible to use `lode` to build a stand-alone
 executable for a package.
@@ -921,11 +941,6 @@ Packages will be able to explicitly declare in
 should be statically linked by mappings and includes.
 Whether this will be mandatory remains undecided.
 
-It will be possible to load and mix Narwhal packages and
-both old and new NPM package styles.  NPM is in the process
-of altering its API such that "lib" roots and "modules"
-declarations are no longer respected.
-
 The loader API will provide a means to get the JavaScript
 content and other resources in a working set of packages, so
 additional tools can be built to provide alternate
@@ -940,7 +955,7 @@ History
 There have been many experiments in package management, in
 general, in JavaScript, and in CommonJS.  NPM for Node by
 Isaac Schlueter, Nodules by Kris Zyp, and my own Tusk for
-Narwhal are two of those experiments.  They all are
+Narwhal are some of those experiments.  They all are
 variations on the CommonJS/Packages/1.0 specification.  The
 specification does not provide insight into how modules in
 packages are linked because there is still a lot of room for
@@ -974,9 +989,6 @@ spirit to "mappings" and Narwhal favors one more conducive
 to "includes".  Kris Zyp's Nodules is written exactly to the
 CommonJS Mappings specification. Lode provides both since
 they both have their limitations.
-
-Lode does not yet conform to the CommonJS/Mappings/C
-specification.  I haven't decided whether it will.
 
 
 License

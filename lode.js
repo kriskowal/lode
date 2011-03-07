@@ -1,4 +1,6 @@
 
+require.paths.splice(0, require.paths.length - 1, __dirname + '/node_modules');
+
 var Q = require("q");
 var LINK = require("./lib/linkage");
 

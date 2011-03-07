@@ -12,7 +12,7 @@
         "package": {"capability": "package"}
     },
     "languages": {
-        ".coffee": {"system": "coffee-script"}
+        ".coffee": "coffee-script@*@npm"
     },
     "resources": [
         "data",
