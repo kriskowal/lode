@@ -84,11 +84,11 @@ Your first package, `foo`, will start with a CommonJS
 that it is your package's main module in the package
 configuration.
 
-#### `foo/main.js`:
+`foo/main.js`:
 
     console.log("Hello, World!");
 
-#### `foo/package.json`
+`foo/package.json`:
 
     {"main": "main.js"}
 
@@ -104,14 +104,14 @@ package's `lib` directory so that they can be required
 without blocking IO.  Add a `foo` library to your package by
 creating a `foo/lib/foo.js` module.
 
-#### `foo/lib/foo.js`
+`foo/lib/foo.js`:
 
     console.log("Hello from Foo!");
 
 Then revise your `main.js` to `require` that module from the
 library.
 
-#### `foo/main.js`
+`foo/main.js`:
 
     require("foo");
 
@@ -130,11 +130,11 @@ In any package, you can only `require` the modules that are
 in that package or in the packages that your package depends
 upon.  Let's create another package, `bar`.
 
-#### `bar/package.json`
+`bar/package.json`:
 
     {"main": "main.js"}
 
-#### `bar/main.js`
+`bar/main.js`:
 
     exports.hello = function (who) {
         console.log("Hello,", who + "!");
@@ -144,7 +144,7 @@ This package provides a main module that can say, "Hello",
 to anyone.  Since we want to use this package in the foo
 package, we need to add a URL to `foo/package.json`.
 
-#### `foo/package.json`
+`foo/package.json`:
 
     {
         "main": "main.js",
@@ -155,7 +155,7 @@ package, we need to add a URL to `foo/package.json`.
 
 Now we can use `bar` in `foo`.
 
-#### `foo/main.js`
+`foo/main.js`:
 
     var BAR = require("bar");
     BAR.hello("World");
@@ -174,7 +174,7 @@ Let's put `bar` in a `.zip` file and put it in `foo`.
 Then we edit `foo/package.json` to use the zip file instead
 of the directory.
 
-#### `foo/package.json`
+`foo/package.json`:
 
     {
         "main": "main.js",
@@ -218,7 +218,7 @@ the package will not work in a browser.
 
 Let's implement Node's example "Hello, World!" server.
 
-#### `hello/main.js`
+`hello/main.js`:
 
     var HTTP = require('node/http');
     HTTP.createServer(function (req, res) {
@@ -233,7 +233,7 @@ on another package by URL, we'll add a dependency to a
 capability of the running engine, in this case Node at
 version 0.4.
 
-#### `hello/package.json`
+`hello/package.json`:
 
     {
         "main": "main.js",
@@ -418,13 +418,49 @@ A capability dependency has a `capability` property with the
 name of a capability provided by the host system.
 Capabilities must be explicitly injected by the container to
 give a package permission to use authority-bearing API's
-like access to a file-system or browser chrome.
+like access to a file-system or browser chrome.  They're
+also useful for bringing in packages that can't otherwise be
+optained by downloading another package.
 
-Presently, the only capability that a package can request in
-Lode is access to Node's internal API's.  The `capability`
-property of the dependency must note that it requires the
-`node@0.4` API and add this as a mapping to package
-configuration.
+For example, the `"package@0"` capability brings in the
+package introspection capability, that gives a package
+access to its own bundled resources.
+
+`foo/package.json`:
+
+    {
+        "main": "main.js",
+        "resources": [
+            "package.json",
+            "data"
+        ],
+        "mappings": {
+            "self": {"capability": "package@0"}
+        }
+    }
+
+`foo/main.js`:
+
+    var self = require("self");
+    var config = self.read("package.json", "utf-8");
+    console.log(JSON.parse(config));
+
+This is useful for including templates and similar
+resources.  All resources are loaded asynchronously before
+execution, so take care to only include as many as you are
+willing to pay at load-time.  The resource tree is
+constructed by overlaying the resource trees of included
+packages, so, for example,  packages can mix and match
+resources for themes.  If a resource overrides a resource
+from another package, the overridden resource will not
+be read, so it won't contribute to the load-time of the
+package.
+
+Another capability that a package can request in Lode on the
+server-side is access to Node's internal API's.  The
+`capability` property of the dependency must note that it
+requires the `node@0.4` API and add this as a mapping to
+package configuration.
 
     {
         "mappings": {
@@ -432,13 +468,27 @@ configuration.
         }
     }
 
-It is my intent to create more and finer-grain capabilities,
-and a user-interface for mediating capabilities for
-suspicious packages.
+A package can also opt to "include" the Node API's in its
+own module name-space.  This is what Lode does internally
+when loading packages that were designed for NPM, in
+addition to translating the NPM `"dependencies"` array into
+`"mappings"` to the locally installed NPM packages.
 
-Capabilities are not yet enforced, but you can get a summary
-of the capabilities that a package requires by reading the
-linkage information for that package.
+    {
+        "includes": [
+            {"capability": "node@0.4"}
+        ]
+    }
+
+It is my intent to create more and finer-grain capabilities,
+and an API and perhaps a user-interface for mediating
+capabilities for suspicious packages.
+
+There is not yet any mechanism for white-listing
+capabilities that a package is (and its dependencies are)
+permitted to use, but you can get a summary of the
+capabilities that a package requires by reading the linkage
+information for that package.
 
     $ lodown <url>
     {
@@ -459,7 +509,6 @@ installed into Node's `require.paths` with other systems
 until it is able to load most packages on its own, and until
 all packages that have to be installed on the local system
 can be exposed to packages through capabilities instead.
-
 
     {
         "mappings": {

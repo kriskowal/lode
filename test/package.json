@@ -9,7 +9,8 @@
     "mappings": {
         "foo": "mappings/foo",
         "qux": {"archive": "mappings/qux.zip"},
-        "package": {"capability": "package"}
+        "self": {"capability": "jetpack/self@1.0"},
+        "package": {"capability": "package@0"}
     },
     "languages": {
         ".coffee": "coffee-script@*@npm"

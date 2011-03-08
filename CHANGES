@@ -1,4 +1,19 @@
 
+0.0.7
+ - Added jetpack/self@1.0 capability for resource
+   introspection.
+ - Added package@0 capability for resource introspection
+   more idiomatic to Lode (paths from the root of the
+   package, returning buffers or strings depending on given
+   charset).
+
+0.0.6
+ - Added the ability to use capabilities for includes.
+ - Added support for NPM packages, include the Node API's
+   as a capability dependency.
+ - Added support for define(literal) notation, per
+   CommonJS/AMD.
+
 0.0.5
  - Added support for "node@0.4" capability injection.
  - The "loaders" property in package.json has been changed

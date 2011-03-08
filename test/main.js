@@ -10,9 +10,11 @@ define(function (require, exports, module) {
     console.log('qux:', require("qux"));
     console.log('test', a, require.main);
 
-    /*
+    var self = require("self");
+    console.log(self.data.load("hello.txt").trim());
+    console.log(self.data.url("hello.txt"));
+
     var pkg = require("package");
-    console.log(pkg.resource("data/hello.txt").url());
-    */
+    console.log(pkg.read("data/hello.txt", "utf-8").trim());
 
 });
