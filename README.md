@@ -429,6 +429,11 @@ Now we can run the server:
     Server running at http://127.0.0.1:8124/
     ^C
 
+Node's `process` free-variable is available with the main
+module of the Node capability.
+
+    var process = require("node");
+
 
 ### Using Installed NPM Packages
 
@@ -600,10 +605,10 @@ the root package and every included package's `"includes"`.
 The layering order is determined by a topological sort with
 the following rules:
 
-# every package is layered above its includes
-# of each array of includes, the layering order is preserved
+* every package is layered above its includes
+* of each array of includes, the layering order is preserved
   from low to high.
-# cyclic includes are errors.
+* cyclic includes are errors.
 
 `/!\` Inclusion is a very tight coupling and requires
 coordination among all of the included packages.  If loose
@@ -706,46 +711,6 @@ create packages that merely inherit and provide alternate
 configuration, or provide configuration to "abstract"
 packages, packages that depend on resources or libraries
 that are mixed in from a depending package.
-
-
-Philosophy
-----------
-
-At the time of this writing (early 2011), the CommonJS
-community has spent a considerable amount of discussion on
-how best to move forward with CommonJS modules for better
-interoperability with browsers.  It is clear that some
-boilerplate is needed for modules to be efficiently loaded
-in modern browsers.  It is also clear that a module's
-dependencies need to be known before `require` is called in
-a module.
-
-There are several schools of thought at the moment, but in
-general we are divided between a simple wrapping of current
-CommonJS modules for modules destined for the browser, and
-those who favor using RequireJS.
-
-One of the many issues between these two approaches is how
-to discover static dependencies.  For those who favor a
-simple wrapping of CommonJS modules, the current best option
-for discovering static dependencies is static analysis,
-scraping the source code of a module for `require` calls.
-This is fraught with difficulty.
-
-Instead, Lode imposes strong constraints on what modules are
-available within a package by enforcing the linkage
-described in `package.json` and affording many good options
-for both internal and external linkage.  In the presence of
-these constraints, the working set of any module in a
-package is a strict subset of the working set of the
-containing package.  In the Node ecosystem, packages are
-very light, usually providing a single module for its public
-API.  By configuring the loader to incorporate module roots
-based on the target environment, it is possible for Lode to
-construct lighter packages.  Given that packages are light,
-it makes sense to take the small risk of bundling packages
-with modules that may never be executed, and designing
-packages around these constraints for use in browsers.
 
 
 Lode Packages
@@ -1391,6 +1356,47 @@ Glossary
   of each module to determine its static dependencies.
 
 
+Philosophy
+----------
+
+At the time of this writing (early 2011), the CommonJS
+community has spent a considerable amount of discussion on
+how best to move forward with CommonJS modules for better
+interoperability with browsers.  It is clear that some
+boilerplate is needed for modules to be efficiently loaded
+in modern browsers.  It is also clear that a module's
+dependencies need to be known before `require` is called in
+a module.
+
+There are several schools of thought at the moment, but in
+general we are divided between a simple wrapping of current
+CommonJS modules for modules destined for the browser, and
+those who favor using RequireJS.
+
+One of the many issues between these two approaches is how
+to discover static dependencies.  For those who favor a
+simple wrapping of CommonJS modules, the current best option
+for discovering static dependencies is static analysis,
+scraping the source code of a module for `require` calls.
+This is fraught with difficulty.
+
+Instead, Lode imposes strong constraints on what modules are
+available within a package by enforcing the linkage
+described in `package.json` and affording many good options
+for both internal and external linkage.  In the presence of
+these constraints, the working set of any module in a
+package is a strict subset of the working set of the
+containing package.  In the Node ecosystem, packages are
+very light, usually providing a single module for its public
+API.  By configuring the loader to incorporate module roots
+based on the target environment, it is possible for Lode to
+construct lighter packages.  Given that packages are light,
+it makes sense to take the small risk of bundling packages
+with modules that may never be executed, and designing
+packages around these constraints for use in browsers.
+
+
+
 Future
 ------
 
@@ -1418,8 +1424,7 @@ executable for a package.
 
 It will be possible for packages to be hosted or bundled for
 use in web browsers, for either development or deployment.
-It will be possible to use alternate roots for deployment
-which may in turn contain alternate configuration.  It is my
+It is my
 hope to leverage Gozala's [Teleport][] package for this
 purpose, and to use Q-JSGI and Q-HTTP as at least an option
 for the server.  I also hope to leverage of Joe Walker's
