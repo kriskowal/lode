@@ -51,14 +51,14 @@ Gettings Started
 ----------------
 
 
-## Using Git and Activate
+### Using Git and Activate
 
     $ git clone git://github.com/kriskowal/lode.git
     $ cd lode
     $ source bin/activate
 
 
-## Using Node and NPM
+### Using Node and NPM
 
 Install [Node][] and [NPM][]. The use `npm` to install
 `lode`.  That will give you `lode`, `lodown`, and `bilde`
@@ -77,7 +77,7 @@ directory (have fun), or just try the last example where
 Lode runs it directly off the web.
 
 
-## Tryouts
+### Tryouts
 
 Then read the test package to get an idea what to expect and:
 
@@ -135,7 +135,7 @@ Packages can be linked to other packages through its
 configuration.
 
 
-## My First Package
+### My First Package
 
 Your first package, `foo`, will start with a CommonJS
 "main" module.  You'll need to create this file, and note
@@ -156,7 +156,7 @@ Now you can execute `main.js` with Lode.
     Hello, World!
 
 
-## The Library
+### The Library
 
 Your package can contain other modules.  These modules must
 be in the `lib` directory of the package root.  Lode
@@ -182,7 +182,7 @@ And run Lode again.
     Hello from Foo!
 
 
-## Linking Packages
+### Linking Packages
 
 So far, in this package, you can only `require("foo")` to
 get the exports of `foo/lib/foo.js`, and `require("")` to
@@ -227,7 +227,7 @@ Then we can run `foo` again with Lode.
     Hello, World!
 
 
-## Archiving a Package
+### Archiving a Package
 
 We can also archive our packages and put them on the web.
 Let's put `bar` in a `.zip` file and put it in `foo`.
@@ -265,7 +265,7 @@ requirements are in the scope of Lode's design, but none of
 them are yet implemented.
 
 
-## Using Node's API
+### Using Node's API
 
 Lode gives your `package.json` absolute control over what
 module identifiers mean in all the modules in your package.
@@ -311,6 +311,49 @@ Now we can run the server:
     $ lode hello
     Server running at http://127.0.0.1:8124/
     ^C
+
+
+### Using CoffeeScript
+
+There are several ways you can write your `package.json` to
+add support for compiling `.coffee` files to JavaScript at
+link time.
+
+You can install it with NPM and use the pseudo-registry
+`"npm"` to grab it from whereever it was installed (Lode
+will find it, using `.npmrc` if necessary).
+
+    $ npm install coffee-script
+
+Then add a link to `package.json`:
+
+    {
+        "main": "main.coffee",
+        "languages": {
+            ".coffee": "coffee-script@1.0.1@npm"
+        }
+    }
+
+You can use NPM's version predicates if you want.
+
+Or you can just download it and put it somewhere near your
+package.
+
+    {
+        "main": "main.coffee",
+        "languages": {
+            ".coffee": "languages/coffee.zip"
+        }
+    }
+
+From there, any script with a `.coffee` extension, either
+the `main.coffee` or in `lib`, will get implicitly compiled.
+
+    console.log "Hello, Coffee!"
+
+Then run it:
+
+    $ lode main.coffee
 
 
 Philosophy
