@@ -154,7 +154,10 @@ configuration.
 
 `foo/package.json`
 
-    {"main": "main.js"}
+    {
+        "lode": true,
+        "main": "main.js"
+    }
 
 Now you can execute `main.js` with Lode.
 
@@ -180,7 +183,10 @@ library.
 
 Leaving your `foo/package.json` alone.
 
-    {"main": "main.js"}
+    {
+        "lode": true,
+        "main": "main.js"
+    }
 
 And run Lode again.
 
@@ -201,7 +207,10 @@ in that package or in the packages that your package depends
 upon.  Let's create another package, `bar` with a
 `bar/package.json`.
 
-    {"main": "main.js"}
+    {
+        "lode": true,
+        "main": "main.js"
+    }
 
 And a `bar/main.js`.
 
@@ -214,6 +223,7 @@ to anyone.  Since we want to use this package in the foo
 package, we need to add a URL to `foo/package.json`.
 
     {
+        "lode": true,
         "main": "main.js",
         "mappings": {
             "bar": "../bar"
@@ -233,6 +243,105 @@ Then we can run `foo` again with Lode.
     Hello, World!
 
 
+### Exporting
+
+The only ratified CommonJS standard way to export features
+is by adding properties to the `exports` object, as above.
+
+    exports.hello = function (who) {
+        console.log("Hello, " + who + "!");
+    };
+
+There is a CommonJS proposal for [Asynchronous Module
+Definition][AMD] that adds a `define` function to the scope
+of a module.  Lode supports this feature if it is explicitly
+requested in a `package.json`.
+
+    {
+        "lode": true,
+        "main": "main.js",
+        "supportDefine": true,
+        "requireDefine": false
+    }
+
+The `define` method has many forms, and the details are
+largely ignored by Lode (since it does not need them,
+although RequireJS does and you could use the same modules
+with that loader).  Only the last argument is salient for
+Lode and it can be a callback.
+
+[AMD]: http://wiki.commonjs.org/wiki/Modules/AsynchronousDefinition
+
+    define(function (require) {
+        return {
+            "hello": function (who) {
+                console.log("Hello, " + who + "!");
+            }
+        }
+    })
+
+Alternately, the last argument can be an object literal.
+
+    define({
+        "hello": function (who) {
+            console.log("Hello, " + who + "!");
+        }
+    })
+
+Lode does not presently support any other argument patterns
+for the callback, so if you're sharing modules with
+RequireJS, you'll have to use this narrow intersection for
+now.
+
+NodeJS allows you to replace the `module.exports` object.
+Lode supports this (although I'm personally not a fan of the
+style).
+
+    module.exports = {
+        "hello": function (who) {
+            console.log("Hello, " + who + "!");
+        }
+    };
+
+Lode also supports a completely non-standard style wherein
+you simply return the exports object.
+
+    return {
+        "hello": function (who) {
+            console.log("Hello, " + who + "!");
+        }
+    };
+
+`/!\` Be aware that any of these systems where you ignore
+the given `exports` object and provide a complete
+replacement, you cannot have cyclic dependencies.  Basic
+CommonJS modules provide an exports object so that you can
+have two modules that import each-other like so:
+
+
+`foo/lib/a.js`
+
+    var A = require("a")
+    exports.odd = function (n) {
+        if (n == 1)
+            return true;
+        return B.even(n - 1);
+    };
+
+`foo/lib/b.js`
+
+    var B = require("b")
+    exports.even = function (n) {
+        if (n == 0)
+            return false;
+        return A.odd(n - 1);
+    };
+
+If you were to replace the exports in both of these modules,
+both modules would receive the original, empty exports
+objects instead of the replacements.
+
+
 ### Archiving a Package
 
 We can also archive our packages and put them on the web.
@@ -247,6 +356,7 @@ of the directory.
 `foo/package.json`:
 
     {
+        "lode": true,
         "main": "main.js",
         "mappings": {
             "bar": "mappings/bar.zip"
@@ -306,6 +416,7 @@ capability of the running engine, in this case Node at
 version 0.4, in `hello/package.json`:
 
     {
+        "lode": true,
         "main": "main.js",
         "mappings": {
             "node": {"capability": "node@0.4"}
@@ -317,6 +428,81 @@ Now we can run the server:
     $ lode hello
     Server running at http://127.0.0.1:8124/
     ^C
+
+
+### Using Installed NPM Packages
+
+All package dependencies in Lode boil down to a single URL
+eventually.  NPM packages express their dependencies as
+mappings from a name to a version predicate (albeith simply
+a single, specific version), and the name is both used to
+lookup the package in the NPM registry *and* to give the
+package a local name, like a mapping.
+
+Lode translates NPM packages internally by changing the
+`dependencies` object into a `mappings` object.  It does
+this by finding the URL of the oldest version that satisfies
+the predicate from among the installed packages (the oldest
+is the least likely to break; if there's a bug, this
+encourages the package maintainers to advance the minimum
+version of its dependencies, or for users to uninstall the
+broken version and provide a newer one).
+
+An NPM package might have a `package.json` like:
+
+    {
+        "dependencies": {
+            "foo": ">=0.0.1"
+        }
+    }
+
+This would get translated to a mapping with the search
+criteria and the source, the "npm" pseudo-registry.
+(`registry` is reserved for the URL of a package registry,
+or `calalog` for the URL of a JSON package catalog, but
+these are not yet implemented).
+
+    {
+        "mappings": {
+            "foo": {
+                "name": "foo",
+                "version": ">=0.0.1",
+                "registry": "npm"
+            }
+        }
+    }
+
+And eventually solved down to a URL like so:
+
+    {
+        "mappings": {
+            "foo": "/usr/local/lib/node/.npm/foo/0.0.2/package"
+        }
+    }
+
+NPM packages also implicitly include the Node API,
+precluding them from use in the browser.
+
+    {
+        "includes": [
+            {"capability": "node@0.4"}
+        ],
+        "dependencies": {
+            "foo": ">=0.0.2"
+        }
+    }
+
+To disable the implicit features provided by NPM and to make
+a package browser-compatible by default, just opt-into Lode
+in the package configuration.  The NPM dependencies will
+still be assimilated.
+
+    {
+        "lode": true,
+        "dependencies": {
+            "foo": ">=0.0.2"
+        }
+    }
 
 
 ### Using CoffeeScript
@@ -334,6 +520,7 @@ will find it, using `.npmrc` if necessary).
 Then add a link to `package.json`:
 
     {
+        "lode": true,
         "main": "main.coffee",
         "languages": {
             ".coffee": "coffee-script@1.0.1@npm"
@@ -346,6 +533,7 @@ Or you can just download it and put it somewhere near your
 package.
 
     {
+        "lode": true,
         "main": "main.coffee",
         "languages": {
             ".coffee": "languages/coffee.zip"
@@ -360,6 +548,164 @@ the `main.coffee` or in `lib`, will get implicitly compiled.
 Then run it:
 
     $ lode main.coffee
+
+
+### Resources
+
+Packages can contain "resources" like HTML fragments,
+templates, and such.  These resources are brought into
+memory at load-time, so they contribute to the initial
+overhead of a package, but they are available without
+needing asynchronous IO once the package is executing.
+
+Resources must be explicitly mentioned in a package's
+configuration and the package must provide a capability to
+access the resources from modules.  Resources are only
+available within the package or included packages, so the
+resources of mapped packages are not available directly.
+
+To make the resource capability available, use a mapping in
+a `package.json`, and note the files or directories that
+contain resources:
+
+    {
+        "lode": true,
+        "mappings": {
+            "resources": {"capability": "package@0"}
+        },
+        "resources": [
+            "data"
+        ]
+    }
+
+Supposing that this package, `foo`, contains a
+`foo/data/hello.txt` file, that can be accessed now using
+the `resources` module from any module in the `foo` package.
+
+    var RESOURCES = require("resources");
+    var hello = RESOURCES.read("data/hello.txt", "utf-8");
+    console.log(hello);
+
+
+### Composing Packages with Includes
+
+Lode packages can be composed with other packages using
+`"includes"`.  If you're familiar with how Narwhal's
+`"dependencies"` array works, `"includes"` should be a
+natural transition.  A package that uses an `"includes"`
+array gets statically layered with all of the included
+packages.  To coin the Mathematical jargon, a package is
+composed of a set of layers from the transitive closure of
+the root package and every included package's `"includes"`.
+The layering order is determined by a topological sort with
+the following rules:
+
+# every package is layered above its includes
+# of each array of includes, the layering order is preserved
+  from low to high.
+# cyclic includes are errors.
+
+`/!\` Inclusion is a very tight coupling and requires
+coordination among all of the included packages.  If loose
+coupling is desired, `"mappings"` are a far superior
+alternative and much more resistant to changes in the
+structure of dependency packages.
+
+Let's contrive a simple example, the `"foo"` and `"bar"`
+packages.  Instead of using a mapping to depend on `"bar"`,
+we'll include `"bar"` in `"foo"`, using `foo/package.json`.
+
+    {
+        "lode": true,
+        "includes": [
+            "../bar"
+        ]
+    }
+
+Suppose that `"foo"` has `foo/lib/foo.js` and `"bar"` has
+`bar/lib/bar.js`.  The resulting `foo` package, using its
+includes has both `foo` and `bar` modules and the entire
+contents of both packages are available from either module,
+including resources.
+
+    var FOO = require("foo"); // foo/lib/foo.js
+    var BAR = require("bar"); // bar/lib/bar.js
+
+Furthermore, if `"foo"` has a `foo/lib/bar.js`, it will
+override the `bar` module from `"bar"`.  The `bar` module
+from the `"bar"` package will not be available and will not
+be loaded, read, or included in the `"foo"` package.
+
+    var FOO = require("foo"); // foo/lib/foo.js
+    var BAR = require("bar"); // foo/lib/bar.js
+
+
+### Use Case: Theme Packages
+
+Resources get layered and can override as well.  This makes
+`"theme"` packages possible.  Suppose that the `bar` package
+uses a resource, `template/index.html`.  It can expose that
+resource in `bar/package.json`, as well as the `mapping` for
+the resource introspection capability.
+
+    {
+        "lode": true,
+        "mappings": {
+            "resources": {"capability": "package@0"}
+        },
+        "resources": [
+            "templates"
+        ]
+    }
+
+    
+`foo` package can include the `bar` package so it can use
+`template/index.html` and the resources mapping itself.
+Here's `foo/package.json`
+
+    {
+        "lode": true,
+        "includes": [
+            "../bar"
+        ]
+    }
+
+Then, from a module in `foo`, it can use `bar`'s resource.
+
+    var RESOURCES = require("resources");
+    RESOURCES.read("template/index.html", "utf-8");
+
+Suppose that `bar` provides `template/index.html` and
+`template/base.html`.  The index uses the base template for
+a look-and-feel.  If `foo` wants to use foo's
+`template/index.html` but wants to use a theme, `baz`, for
+the `template/base.html` file, it can mix that in too, below
+itself, but in a layer above `bar`.  This can be managed by
+injecting `baz` in the `includes` array.
+
+    {
+        "lode": true,
+        "includes": [
+            "../bar",
+            "../baz"
+        ]
+    }
+
+
+Now, in any of these packages, `templates/index.html` will
+come from `bar` and `templates/base.html` will come from
+`baz`.
+
+    var RESOURCES = require("resources");
+    RESOURCES.read("template/base.html", "utf-8");
+    RESOURCES.read("template/index.html", "utf-8");
+
+There are many potential applications for package inclusion
+beyond themes.  For example, they can also be used to
+create packages that merely inherit and provide alternate
+configuration, or provide configuration to "abstract"
+packages, packages that depend on resources or libraries
+that are mixed in from a depending package.
 
 
 Philosophy
@@ -740,6 +1086,7 @@ A package may opt-in to support the RequireJS `define`
 boilerplate in modules.
 
     {
+        "lode": true,
         "supportDefine": true
     }
 
