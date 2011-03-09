@@ -2,33 +2,88 @@
 LODE
 ====
 
-This is an experimental prototype for a new approach to Node
-packages, and broadly, to CommonJS JavaScript packages, and
-more broadly, to packaging and deploying programs in
-general.
+Lode is a JavaScript module system built on Node and
+CommonJS designs, using packages and statically linking
+modules across and within packages at load-time.
 
-Lode is an experiment to provide asynchronously loading
-modules both for servers and clients by making packages the
-smallest unit of functionality deliverable to a browser and
-using the `package.json` of each package to statically link
-modules between packages.  Furthermore, Lode is intended to
-provide better options for decoupling shared installation of
-packages from deployment, particularly for separate
-deployment and management of CommonJS packages for use on
-the server from those for use on the client.
+* On the server-side, Lode asynchronously loads and
+  statically links all of the modules in a working set of
+  packages before they are either executed or distributed.
+* Packages have absolute control over their module
+  name-space, and must explicitly refer to other packages in
+  their `package.json` for those packages to be available.
+  No more missing dependencies when packages are published.
+* Packages can be loaded from ZIP files over HTTP or HTTPS
+  in addition to local file system directories or ZIP files.
+  Package dependencies are ultimately URL's.
+* Lode can use compiler packages at load-time, like
+  CoffeeScript, obviating the need for a build-step.
+* Lode packages can be composed with other packages using
+  `"includes"` and `"mappings"`.
+* Lode packages can contain and access their own static
+  resources, like HTML fragments.
+* Lode is designed to allow packages to provide alternate
+  modules and resources depending on various modes, like
+  debug, on the browser versus the server, or alternate
+  embeddings, engines, or platforms.
+* Lode can link some NPM packages without alteration, and
+  provides the same strict linkage as other Lode packages,
+  meaning that missing dependencies in NPM packages can be
+  detected by running them with Lode.
+* Lode contains an API that permits package linkage and
+  content to be inspected by third-party tools, like
+  documentation, lint, and build tools.
 
-To use `lode`, install [Node][] and [NPM][]. The use `npm` to
-install `lode`.  That will give you a `lode` executable.
+Soon:
+
+* Lode can either build or host packages for use in web
+  browsers.
+* Lode can verify and update the hashes of dependencies, and
+  can use those hashes as cache keys, both on the
+  server-side and the client-side.  Packages can be hosted
+  on CDN's with far-future expiration dates.
+* Lode can determine, based only on information in
+  `package.json` files, whether a package can be used
+  server-side, client-side, or both.
+
+
+Gettings Started
+----------------
+
+
+## Using Git and Activate
+
+    $ git clone git://github.com/kriskowal/lode.git
+    $ cd lode
+    $ source bin/activate
+
+
+## Using Node and NPM
+
+Install [Node][] and [NPM][]. The use `npm` to install
+`lode`.  That will give you `lode`, `lodown`, and `bilde`
+executables.
 
 [Node]: https://github.com/ry/node
 
 [NPM]: https://github.com/isaacs/npm
 
+    $ curl http://npmjs.org/install.sh | sh
     $ npm install lode
+
+To have any fun in the tryouts section, you'll also need a
+copy of the test.zip, which you can find in the NPM packages
+directory (have fun), or just try the last example where
+Lode runs it directly off the web.
+
+
+## Tryouts
 
 Then read the test package to get an idea what to expect and:
 
     $ lode test
+    $ lode test.zip
+    $ lode https://github.com/kriskowal/lode/raw/master/test.zip
 
 `lode` is an alternate executable that runs CommonJS modules
 in packages.  The packages of modules are asynchronously
@@ -79,16 +134,19 @@ that contains scripts, resources, and configuration.
 Packages can be linked to other packages through its
 configuration.
 
+
+## My First Package
+
 Your first package, `foo`, will start with a CommonJS
 "main" module.  You'll need to create this file, and note
 that it is your package's main module in the package
 configuration.
 
-`foo/main.js`:
+`foo/main.js`
 
     console.log("Hello, World!");
 
-`foo/package.json`:
+`foo/package.json`
 
     {"main": "main.js"}
 
@@ -97,6 +155,9 @@ Now you can execute `main.js` with Lode.
     $ lode foo/main.js
     Hello, World!
 
+
+## The Library
+
 Your package can contain other modules.  These modules must
 be in the `lib` directory of the package root.  Lode
 discovers and statically links all of the modules in your
@@ -104,21 +165,24 @@ package's `lib` directory so that they can be required
 without blocking IO.  Add a `foo` library to your package by
 creating a `foo/lib/foo.js` module.
 
-`foo/lib/foo.js`:
-
     console.log("Hello from Foo!");
 
-Then revise your `main.js` to `require` that module from the
+Then revise your `foo/main.js` to `require` that module from the
 library.
 
-`foo/main.js`:
-
     require("foo");
+
+Leaving your `foo/package.json` alone.
+
+    {"main": "main.js"}
 
 And run Lode again.
 
     $ lode foo
     Hello from Foo!
+
+
+## Linking Packages
 
 So far, in this package, you can only `require("foo")` to
 get the exports of `foo/lib/foo.js`, and `require("")` to
@@ -128,13 +192,12 @@ package.
 
 In any package, you can only `require` the modules that are
 in that package or in the packages that your package depends
-upon.  Let's create another package, `bar`.
-
-`bar/package.json`:
+upon.  Let's create another package, `bar` with a
+`bar/package.json`.
 
     {"main": "main.js"}
 
-`bar/main.js`:
+And a `bar/main.js`.
 
     exports.hello = function (who) {
         console.log("Hello,", who + "!");
@@ -143,8 +206,6 @@ upon.  Let's create another package, `bar`.
 This package provides a main module that can say, "Hello",
 to anyone.  Since we want to use this package in the foo
 package, we need to add a URL to `foo/package.json`.
-
-`foo/package.json`:
 
     {
         "main": "main.js",
@@ -164,6 +225,9 @@ Then we can run `foo` again with Lode.
 
     $ lode foo
     Hello, World!
+
+
+## Archiving a Package
 
 We can also archive our packages and put them on the web.
 Let's put `bar` in a `.zip` file and put it in `foo`.
@@ -200,6 +264,9 @@ and providing an alternate package.  All of these
 requirements are in the scope of Lode's design, but none of
 them are yet implemented.
 
+
+## Using Node's API
+
 Lode gives your `package.json` absolute control over what
 module identifiers mean in all the modules in your package.
 In the same sense that it is possible to trace all of the
@@ -216,9 +283,8 @@ package depends on Node's file system API, that must be
 noted in a `package.json`, thus we can easily determine that
 the package will not work in a browser.
 
-Let's implement Node's example "Hello, World!" server.
-
-`hello/main.js`:
+Let's implement Node's example "Hello, World!" server,
+`hello/main.js`.
 
     var HTTP = require('node/http');
     HTTP.createServer(function (req, res) {
@@ -231,9 +297,7 @@ To make this possible, we will need to bring Node's API's
 into our package's module name space.  Instead of depending
 on another package by URL, we'll add a dependency to a
 capability of the running engine, in this case Node at
-version 0.4.
-
-`hello/package.json`:
+version 0.4, in `hello/package.json`:
 
     {
         "main": "main.js",
@@ -249,8 +313,8 @@ Now we can run the server:
     ^C
 
 
-The Experiment
---------------
+Philosophy
+----------
 
 At the time of this writing (early 2011), the CommonJS
 community has spent a considerable amount of discussion on

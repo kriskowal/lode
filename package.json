@@ -19,7 +19,8 @@
     ],
     "bin": {
         "lode": "./bin/lode",
-        "lodown": "./bin/lodown"
+        "lodown": "./bin/lodown",
+        "bilde": "./bin/bilde"
     },
     "repository": {
         "type": "git",
