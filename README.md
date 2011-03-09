@@ -2,55 +2,26 @@
 LODE
 ====
 
-Lode is a JavaScript module system built on Node and
-CommonJS designs, using packages and statically linking
-modules across and within packages at load-time.
+Lode is a JavaScript application agent.  It runs JavaScript
+packages on your local file-system or off the web, and can
+Bilde scripts so they can be run in web browsers.
 
-* Lode does not install packages on the local file system,
-  nor does it require packages to be installed.  If they are
-  on the local file system, it can use them, but it's just
-  as well if they're on the web and `lode` is run by
-  `nobody`.  You can think of Lode as a JavaScript
-  application web agent.
-* On the server-side, Lode asynchronously loads and
-  statically links all of the modules in a working set of
-  packages before they are either executed or distributed.
-* Packages have absolute control over their module
-  name-space, and must explicitly refer to other packages in
-  their `package.json` for those packages to be available.
-  No more missing dependencies when packages are published.
-* Packages can be loaded from ZIP files over HTTP or HTTPS
-  in addition to local file system directories or ZIP files.
-  Package dependencies are ultimately URL's.
-* Lode can use compiler packages at load-time, like
-  CoffeeScript, obviating the need for a build-step.
-* Lode packages can be composed with other packages using
-  `"includes"` and `"mappings"`.
-* Lode packages can contain and access their own static
-  resources, like HTML fragments.
-* Lode is designed to allow packages to provide alternate
-  modules and resources depending on various modes, like
-  debug, on the browser versus the server, or alternate
-  embeddings, engines, or platforms.
-* Lode can link some NPM packages without alteration, and
-  provides the same strict linkage as other Lode packages,
-  meaning that missing dependencies in NPM packages can be
-  detected by running them with Lode.
-* Lode contains an API that permits package linkage and
-  content to be inspected by third-party tools, like
-  documentation, lint, and build tools.
+Lode is built on Node and CommonJS designs but takes a
+radical approach to dependency management.  Modules are
+linked based only on information in package configuration
+files and the layout conventions of packages.
 
-Soon:
+Lode supports:
 
-* Lode can either build or host packages for use in web
-  browsers.
-* Lode can verify and update the hashes of dependencies, and
-  can use those hashes as cache keys, both on the
-  server-side and the client-side.  Packages can be hosted
-  on CDN's with far-future expiration dates.
-* Lode can determine, based only on information in
-  `package.json` files, whether a package can be used
-  server-side, client-side, or both.
+* ZIP files
+* HTTP, HTTPS, local files
+* NPM packages and new Lode packages
+* CommonJS Packages, Modules, Mappings
+* Non-module resources, like HTML and JSON
+* CoffeeScript, and extensible for other module languages
+* Node and Browsers, with more platforms to come
+* An API for third-party tools like documentation
+  generators, linters, testers, and build tools
 
 
 Gettings Started
