@@ -6,6 +6,12 @@ Lode is a JavaScript module system built on Node and
 CommonJS designs, using packages and statically linking
 modules across and within packages at load-time.
 
+* Lode does not install packages on the local file system,
+  nor does it require packages to be installed.  If they are
+  on the local file system, it can use them, but it's just
+  as well if they're on the web and `lode` is run by
+  `nobody`.  You can think of Lode as a JavaScript
+  application web agent.
 * On the server-side, Lode asynchronously loads and
   statically links all of the modules in a working set of
   packages before they are either executed or distributed.
