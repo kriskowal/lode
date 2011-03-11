@@ -8,8 +8,9 @@ Bilde scripts so they can be run in web browsers.
 
 Lode is built on Node and CommonJS designs but takes a
 radical approach to dependency management.  Modules are
-linked based only on information in package configuration
-files and the layout conventions of packages.
+linked completely asynchronously and based only on
+information in package configuration files and the layout
+conventions of packages.
 
 Lode supports:
 
@@ -1065,7 +1066,7 @@ Lode Modules
 
 Lode modules have the following free variables:
 
-## `exports`
+### `exports`
 
 The public API of the module, which can be augmented or
 replaced.  You can replace a module's exports by returning
@@ -1077,7 +1078,7 @@ this practice is presently tolerated in Lode modules, but
 may eventually be restricted to a legacy loader for
 NPM-style packages.
 
-## `require(id)`
+### `require(id)`
 
 Returns a module given a relative or top-level module
 identifier.  A relative module identifier is prefixed with a
@@ -1086,7 +1087,7 @@ terms to traverse the module name space like file system
 directories, but ".." above the top of the module name space
 ("") is not defined and may throw an error.
 
-## `module`
+### `module`
 
 The module meta-data object contains information about the
 module itself.  This may include its `id`, `path`,
@@ -1094,7 +1095,7 @@ module itself.  This may include its `id`, `path`,
 it comes from.  The `module` object is only guaranteed to
 have an `id`
 
-## `require.main`
+### `require.main`
 
 If a package is loaded with the `lode` executable, or if it
 is loaded using the internal API and executed with

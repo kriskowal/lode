@@ -1,0 +1,7 @@
+node_modules/uglify-js/.gitignore
+node_modules/uglify-js/README.html
+node_modules/uglify-js/README.org
+node_modules/uglify-js/bin/
+node_modules/uglify-js/docstyle.css
+node_modules/uglify-js/package.json
+node_modules/uglify-js/test/

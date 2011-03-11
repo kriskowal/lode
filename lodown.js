@@ -10,10 +10,11 @@ var LINK = require("./lib/linkage");
 exports.main = main;
 function main() {
     var href = process.argv[2] || '';
-    var got = PFS.get(href, {fs: FS, http: HTTP});
+    var engines = process.argv.slice(3);
+    var got = PFS.get(href, {"fs": FS, "http": HTTP});
     return Q.when(got, function (got) {
         var options = {
-            "engines": ["lode", "node"],
+            "engines": engines.length ? engines : ["lode", "node"],
             "debug": true,
             "fs": got.fs,
             "http": HTTP,
